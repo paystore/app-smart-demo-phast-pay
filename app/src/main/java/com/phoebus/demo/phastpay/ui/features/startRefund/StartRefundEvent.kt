@@ -5,7 +5,6 @@ import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 sealed class StartRefundEvent {
     data class Initialize(
-        val appClientId: String,
         val applicationId: String,
         val applicationName: String
     ) : StartRefundEvent()

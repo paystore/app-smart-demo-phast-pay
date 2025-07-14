@@ -140,7 +140,27 @@ class FilterViewModel : ViewModel() {
                         )
                     }
 
-                    else -> _state.value.copy(periodSelected = event.period)
+                    DatePeriod.OTHER_PERIOD -> {
+                        val now = Calendar.getInstance()
+                        val currentDay = now[Calendar.DAY_OF_MONTH]
+
+                        val endDate = DateUtils.formatDate(now.time)
+
+                        val calendarStart = (now.clone() as Calendar).apply {
+                            add(Calendar.MONTH, -1)
+                            val maxDayOfMonth = getActualMaximum(Calendar.DAY_OF_MONTH)
+                            set(Calendar.DAY_OF_MONTH, minOf(currentDay, maxDayOfMonth))
+                        }
+                        val startDate = DateUtils.formatDate(calendarStart.time)
+
+                        _state.value.copy(
+                            periodSelected = event.period,
+                            startDate = startDate,
+                            endDate = endDate,
+                            startTime = "00:00",
+                            endTime = "23:59"
+                        )
+                    }
                 }
 
                 _state.value = newState

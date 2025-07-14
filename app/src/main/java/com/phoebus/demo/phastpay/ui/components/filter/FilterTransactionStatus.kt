@@ -103,6 +103,7 @@ fun statusToDisplayName(status: TransactionStatus): String {
         TransactionStatus.CANCELED_PAYMENT -> stringResource(R.string.filter_status_canceled_payment)
         TransactionStatus.EXPIRED_PAYMENT -> stringResource(R.string.filter_status_expired_payment)
         TransactionStatus.ERROR_PAYMENT -> stringResource(R.string.filter_status_error_payment)
+        TransactionStatus.ERROR_REFUND -> stringResource(R.string.filter_status_error_payment)
         TransactionStatus.REQUEST_REFUND -> stringResource(R.string.filter_status_request_refund)
         TransactionStatus.PARTIAL_REFUND -> stringResource(R.string.filter_status_partial_refund)
         TransactionStatus.COMPLETED_REFUND -> stringResource(R.string.filter_status_completed_refund)

@@ -4,9 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 class PhastPayStartRefundRequest(
-    @SerializedName("app_client_id")
-    val appClientId: String? = null,
-
     @SerializedName("application_id")
     val applicationId: String? = null,
 

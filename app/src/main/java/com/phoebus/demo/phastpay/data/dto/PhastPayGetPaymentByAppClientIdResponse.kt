@@ -24,6 +24,8 @@ class PhastPayGetPaymentByAppClientIdResponse (
     val applicationId: String? = null,
     @SerializedName("application_name")
     val applicationName: String? = null,
+    @SerializedName("refunds")
+    val refunds: List<PhastPayGetRefundByIdResponse>? = null
 ) {
     fun toJson(): String {
         return Gson().toJson(this)

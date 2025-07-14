@@ -53,7 +53,6 @@ class StartRefundViewModel : ViewModel() {
             is StartRefundEvent.Initialize -> {
                 _state.update {
                     it.copy(
-                        appClientId = event.appClientId,
                         applicationId = event.applicationId,
                         applicationName = event.applicationName
                     )
@@ -85,7 +84,6 @@ class StartRefundViewModel : ViewModel() {
                     startRefundService.invoke(
                         event.phastPayClient,
                         PhastPayStartRefundRequest(
-                            appClientId = state.value.appClientId,
                             applicationId = state.value.applicationId,
                             applicationName = state.value.applicationName,
                             paymentId = state.value.paymentId,

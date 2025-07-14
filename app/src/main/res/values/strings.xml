@@ -12,6 +12,10 @@
     <string name="get_refund_id">Consultar por RefundId</string>
     <string name="get_filter">Filtro de Consulta</string>
     <string name="get_transactions">Consultar Transações</string>
+    <string name="date_label">Data</string>
+    <string name="copied_text">%s copiado!</string>
+    <string name="iva_label">IVA</string>
+    <string name="refunds_label">Devoluções</string>
     <string name="get_payment_by_client_id">Consultar por ClientId</string>
     <string name="find_by_payment_id">PaymentId</string>
     <string name="find_by_refund_id">RefundId</string>

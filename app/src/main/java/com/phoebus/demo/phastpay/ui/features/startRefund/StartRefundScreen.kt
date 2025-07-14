@@ -55,7 +55,6 @@ fun StartRefundScreen(
     LaunchedEffect(viewModel) {
         viewModel.onEvent(
             StartRefundEvent.Initialize(
-                appClientId = UUID.randomUUID().toString(),
                 applicationId = "123456789",
                 applicationName = context.getString(R.string.app_name)
             )
@@ -117,17 +116,6 @@ fun StartRefundContent(
                 .verticalScroll(scrollState)
                 .padding(25.dp)
         ) {
-            Text(
-                modifier = Modifier.padding(top = 8.dp),
-                text = stringResource(id = R.string.client_id),
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = formState.appClientId,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
             OutlinedTextField(
                 value = formState.paymentId,
                 onValueChange = {

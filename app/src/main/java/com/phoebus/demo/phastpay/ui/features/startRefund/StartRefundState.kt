@@ -4,7 +4,6 @@ import com.phoebus.demo.phastpay.data.dto.PhastPayStartRefundResponse
 import java.util.UUID
 
 data class StartRefundState (
-    val appClientId: String = UUID.randomUUID().toString(),
     val applicationId: String = "100231",
     val applicationName: String = "PhastPay Demo",
     val value: String? = null,

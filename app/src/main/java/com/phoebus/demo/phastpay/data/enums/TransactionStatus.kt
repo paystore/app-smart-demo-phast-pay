@@ -9,6 +9,7 @@ enum class TransactionStatus {
     ERROR_PAYMENT,
     REQUEST_REFUND,
     PARTIAL_REFUND,
+    ERROR_REFUND,
     COMPLETED_REFUND,
     UNKNOWN,
     REFUNDED;

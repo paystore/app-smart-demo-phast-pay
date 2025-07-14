@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.receipt.PhastItem
+import com.phoebus.demo.phastpay.ui.components.receipt.RefundsItem
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RouteParams
 import com.phoebus.phastpay.sdk.client.PhastPayClient
@@ -96,6 +97,9 @@ fun GetPaymentsContent(
             ) {
                 if (it != null) {
                     items(it.payments) { item ->
+                        val refunds = item.refunds?.map{
+                            RefundsItem(refundId = it.refundId, valor = it.value, status = it.status, dateTime = it.dateTime, iva = it.iva)
+                        }
                         PhastItem(
                             currency = item.currency,
                             status = item.status,
@@ -104,7 +108,8 @@ fun GetPaymentsContent(
                             paymentId = item.paymentId,
                             value = item.value,
                             dateTime = item.dateTime,
-                            iva = item.iva
+                            iva = item.iva,
+                            refunds = refunds
                         )
                     }
                 }
