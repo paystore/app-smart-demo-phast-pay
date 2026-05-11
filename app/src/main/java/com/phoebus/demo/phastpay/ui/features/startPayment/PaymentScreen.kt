@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,43 +26,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
+import com.phoebus.demo.phastpay.data.enums.Service
 import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
 import com.phoebus.demo.phastpay.ui.components.ServiceSelector
 import com.phoebus.demo.phastpay.ui.components.button.PhButton
 import com.phoebus.demo.phastpay.ui.components.dialogs.PhDialog
+import com.phoebus.demo.phastpay.ui.components.payment.InputCurrency
 import com.phoebus.demo.phastpay.ui.components.payment.InputValue
 import com.phoebus.demo.phastpay.ui.components.payment.PhoneNumberInput
+import com.phoebus.demo.phastpay.ui.components.payment.getCountryCallingCode
+import com.phoebus.demo.phastpay.ui.components.selector.GenericSelector
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RoutesConstants
 import com.phoebus.demo.phastpay.utils.CurrencyType
-import com.phoebus.demo.phastpay.data.enums.Service
-import com.phoebus.demo.phastpay.ui.components.payment.getCountryCallingCode
 import com.phoebus.demo.phastpay.utils.PhoneNumberConstants.countries
-import com.phoebus.phastpay.sdk.client.PhastPayClient
-import java.util.UUID
 
 
 @Composable
 fun PaymentScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: PaymentViewModel = viewModel()
+    viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
     val dialogMessage by viewModel.dialogMessage.collectAsState()
 
     if (dialogMessage != null) {
@@ -98,11 +90,7 @@ fun PaymentScreen(
 
     LaunchedEffect(viewModel) {
         viewModel.onEvent(
-            PaymentEvent.Initialize(
-                appClientId = UUID.randomUUID().toString(),
-                applicationId = "123456789",
-                applicationName = context.getString(R.string.app_name)
-            )
+            PaymentEvent.Initialize
         )
     }
 
@@ -113,7 +101,6 @@ fun PaymentScreen(
         content = {
             PaymentContent(
                 state = state,
-                phastPayClient = phastPayClient,
                 onEvent = viewModel::onEvent,
                 modifier = Modifier.padding(it)
             )
@@ -125,7 +112,6 @@ fun PaymentScreen(
 @Composable
 fun PaymentContent(
     state: PaymentState,
-    phastPayClient: PhastPayClient,
     onEvent: (PaymentEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -161,68 +147,76 @@ fun PaymentContent(
             )
 
             Text(text = stringResource(R.string.select_service))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                ServiceSelector(
-                    service = Service.valueOf(state.service),
-                    onPhastTypeSelected = { onEvent(PaymentEvent.UpdateService(it.name)) },
+
+            ServicePaymentSelector(formState = state, formEvent = onEvent)
+
+            if(state.sendValue || state.sendTipValue){
+                InputCurrency(
+                    currencyType = CurrencyType.valueOf(state.currency),
+                    onCurrencyChange = { onEvent(PaymentEvent.UpdateCurrency(it.name)) }
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = stringResource(R.string.send_value))
-                Switch(
-                    checked = state.sendValue,
-                    onCheckedChange = {
-                        onEvent(PaymentEvent.UpdateSendValue(it))
-                        if (!it) onEvent(PaymentEvent.UpdateValue(null))
-                    }
-                )
-            }
+            GenericSelector(
+                label = stringResource(R.string.send_value),
+                checked = state.sendValue,
+                onCheckedChange = {
+                    onEvent(PaymentEvent.UpdateSendValue(it))
+                    if (!it) onEvent(PaymentEvent.UpdateValue(null))
+                },
+                testTag = "tgl_switch_value_screen"
+            )
 
             if (state.sendValue) {
                 InputValue(
-                    checked = state.sendValue,
+                    checked = true,
                     value = state.value ?: "",
-                    currencyType = CurrencyType.valueOf(state.currency ?: "EUR"),
-                    onCurrencyChange = { onEvent(PaymentEvent.UpdateCurrency(it.name)) },
+                    currencyType = CurrencyType.valueOf(state.currency),
                     onChangeValue = { onEvent(PaymentEvent.UpdateValue(it)) },
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = stringResource(R.string.send_phone_number))
-                Switch(
+            if (state.service != Service.TWINT.name) {
+                GenericSelector(
+                    label = stringResource(R.string.send_phone_number),
                     checked = state.sendPhoneNumber,
-                    onCheckedChange = {
-                        onEvent(PaymentEvent.UpdateSendPhoneNumber(it))
-                        if (!it) onEvent(PaymentEvent.UpdateValue(null))
-                    }
+                    onCheckedChange = {onEvent(PaymentEvent.UpdateSendPhoneNumber(it))},
+                    testTag = "tgl_switch_send_phone_number"
+                )
+
+                if (state.sendPhoneNumber) {
+                    PhoneNumberInput(
+                        country = selectedCountry.value,
+                        updateCountry = { selectedCountry.value = it },
+                        onDdiChange = { onEvent(PaymentEvent.UpdateCountryCode(it)) },
+                        phone = state.phoneNumber ?: "",
+                        onPhoneChange = { onEvent(PaymentEvent.UpdatePhoneNumber(it)) }
+                    )
+                }
+            }
+
+            GenericSelector(
+                label = stringResource(R.string.send_additional_value),
+                checked = state.sendTipValue,
+                onCheckedChange = { onEvent(PaymentEvent.UpdateSendTipValue(it)) },
+                testTag = "tgl_switch_phone_screen"
+            )
+
+            if (state.sendTipValue) {
+                InputValue(
+                    checked = true,
+                    value = state.additionalValue ?: "",
+                    currencyType = CurrencyType.valueOf(state.currency),
+                    onChangeValue = { onEvent(PaymentEvent.UpdateTipValue(it)) },
                 )
             }
 
-            if (state.sendPhoneNumber) {
-                PhoneNumberInput(
-                    country = selectedCountry.value,
-                    updateCountry = { selectedCountry.value = it },
-                    onDdiChange = { onEvent(PaymentEvent.UpdateCountryCode(it)) },
-                    phone = state.phoneNumber ?: "",
-                    onPhoneChange = { onEvent(PaymentEvent.UpdatePhoneNumber(it)) }
-                )
-            }
-
-            AddictionalInfo(switchItem = state.switchAdditionalInfo, onSwitchChanged = onEvent)
+            GenericSelector(
+                label = stringResource(R.string.add_info),
+                checked = state.switchAdditionalInfo,
+                onCheckedChange = { onEvent(PaymentEvent.SendAdditionalInfo(send = it)) },
+                testTag = "tgl_switch_add_info"
+            )
 
             if (state.switchAdditionalInfo) {
                 OutlinedTextField(
@@ -267,48 +261,47 @@ fun PaymentContent(
             CheckboxPrint(
                 printCustomerReceiptChecked = state.printCustomerReceipt,
                 printMerchantReceiptChecked = state.printMerchantReceipt,
+                previewCustomerReceiptChecked = state.previewCustomerReceipt,
+                previewMerchantReceiptChecked = state.previewMerchantReceipt,
                 onPrintCustomerReceiptChange = {
                     onEvent(PaymentEvent.UpdatePrintCustomerReceipt(it))
                 },
                 onPrintMerchantReceiptChange = {
                     onEvent(PaymentEvent.UpdatePrintMerchantReceipt(it))
+                },
+                onPreviewCustomerReceiptChange = {
+                    onEvent(PaymentEvent.UpdatePreviewCustomerReceipt(it))
+                },
+                onPreviewMerchantReceiptChange = {
+                    onEvent(PaymentEvent.UpdatePreviewMerchantReceipt(it))
                 }
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             PhButton(
                 title = stringResource(R.string.start_payment),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .align(Alignment.CenterHorizontally),
                 enabled = true
             ) {
-                onEvent(PaymentEvent.SubmitPayment(phastPayClient))
+                onEvent(PaymentEvent.SubmitPayment)
             }
         }
     }
 }
 
 @Composable
-fun AddictionalInfo(
-    switchItem: Boolean,
-    onSwitchChanged: (PaymentEvent) -> Unit,
-) {
+fun ServicePaymentSelector(modifier: Modifier = Modifier, formState: PaymentState, formEvent : (PaymentEvent) -> Unit){
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = stringResource(R.string.add_info),
-            textAlign = TextAlign.Start,
-        )
-
-        Switch(
-            checked = switchItem,
-            onCheckedChange = { isChecked ->
-                onSwitchChanged(PaymentEvent.SendAdditionalInfo(send = isChecked))
-            },
-            modifier = Modifier
-                .testTag("tgl_switch_phone_screen")
-                .semantics { contentDescription = "tgl_switch_phone_screen" },
+        ServiceSelector(
+            service = Service.valueOf(formState.service),
+            onPhastTypeSelected = { formEvent(PaymentEvent.UpdateService(it.name)) },
         )
     }
 }

@@ -1,37 +1,55 @@
 package com.phoebus.demo.phastpay.services
 
-import com.google.gson.Gson
+import android.util.Log
 import com.phoebus.demo.phastpay.data.dto.PhastErrorResponse
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentsToRefundRequest
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentsToRefundResponse
+import com.phoebus.demo.phastpay.utils.ConstantsUtils
 import com.phoebus.phastpay.sdk.client.PhastPayClient
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GetPaymentsToRefundService {
-
+class GetPaymentsToRefundService @Inject constructor(
+    private val json: Json
+) {
     operator fun invoke(
         phastPayClient: PhastPayClient,
         phastPayGetPaymentsToRefundRequest: PhastPayGetPaymentsToRefundRequest
     ) = callbackFlow {
-        val gson = Gson()
         val callback = object : PhastPayClient.ICallbackService {
             override fun onError(response: String?) {
-                val responseError = gson.fromJson(response, PhastErrorResponse::class.java)
-                trySend(Result.failure(Exception(responseError.errorMessage)))
+                val responseError = response?.let { json.decodeFromString<PhastErrorResponse>(it) }
+                trySend(Result.failure(Exception(responseError?.errorMessage)))
                 close()
             }
 
             override fun onSuccess(response: String?) {
-                val responseObject =
-                    gson.fromJson(response, PhastPayGetPaymentsToRefundResponse::class.java)
-                trySend(Result.success(responseObject))
+                if (response.isNullOrBlank()) {
+                    Log.d(ConstantsUtils.TAG, "Resposta vazia do app-phaspay")
+                    close()
+                    return
+                }
+
+                val result = runCatching {
+                    json.decodeFromString<PhastPayGetPaymentsToRefundResponse>(response)
+                }
+
+                result.onSuccess { res ->
+                    trySend(Result.success(res))
+                }.onFailure { erro ->
+                    // Aqui você captura erros de parsing, JSON malformado, etc.
+                    trySend(Result.failure(Exception("Falha ao processar dados: ${erro.message}")))
+                }
+
                 close()
             }
         }
 
         try {
-            val requestJson = phastPayGetPaymentsToRefundRequest.toJson()
+            val requestJson = json.encodeToString(phastPayGetPaymentsToRefundRequest)
             phastPayClient.getPaymentsToRefund(requestJson, callback)
         } catch (e: Exception) {
             trySend(Result.failure(e))

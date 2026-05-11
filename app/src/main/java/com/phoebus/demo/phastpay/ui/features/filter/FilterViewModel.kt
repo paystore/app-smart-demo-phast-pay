@@ -9,14 +9,18 @@ import com.phoebus.demo.phastpay.data.enums.ReportType
 import com.phoebus.demo.phastpay.data.enums.ServiceType
 import com.phoebus.demo.phastpay.data.enums.TransactionStatus
 import com.phoebus.demo.phastpay.utils.DateUtils
+import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 
-class FilterViewModel : ViewModel() {
+@HiltViewModel
+class FilterViewModel @Inject constructor() : ViewModel() {
 
     private val _state = mutableStateOf(FilterState())
     val state: State<FilterState> = _state

@@ -27,7 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.data.enums.DatePeriod
@@ -43,9 +43,9 @@ import com.phoebus.demo.phastpay.ui.components.filter.FilterTransactionStatus
 import com.phoebus.demo.phastpay.ui.components.filter.FilterValue
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.GetPaymentsRoute
-import com.phoebus.demo.phastpay.ui.navigation.GetTransactionsRoute
 import com.phoebus.demo.phastpay.ui.navigation.GetPaymentsToRefundRoute
 import com.phoebus.demo.phastpay.ui.navigation.GetReportsRoute
+import com.phoebus.demo.phastpay.ui.navigation.GetTransactionsRoute
 import com.phoebus.demo.phastpay.ui.navigation.RouteParams
 import com.phoebus.demo.phastpay.ui.theme.AppSmartDemoPhastPayTheme
 import com.phoebus.demo.phastpay.utils.DateUtils
@@ -56,7 +56,7 @@ import com.phoebus.demo.phastpay.utils.getScreenWidth
 fun FilterScreen(
     navController: NavController,
     filterType: FilterType = FilterType.GET_PAYMENTS,
-    viewModel: FilterViewModel = viewModel(),
+    viewModel: FilterViewModel = hiltViewModel(),
 ) {
 
     val state by viewModel.state
@@ -215,9 +215,9 @@ fun FilterContent(
                 onEvent = onEvent
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
             if (formState.filterType == FilterType.REPORT) {
+                Spacer(modifier = Modifier.height(20.dp))
+
                 FilterService(
                     service = selectedService,
                     onServiceTypeSelected = { provider -> onChangeService(provider) }
@@ -226,13 +226,12 @@ fun FilterContent(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-
-            Spacer(modifier = Modifier.height(20.dp))
-
             FilterReportType(
                 filterType = formState.filterType,
                 reportSelected = formState.reportType,
             ) { onEvent(FilterEvent.SelectReportType(it)) }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             FilterTransactionStatus(
                 filterType = formState.filterType,
@@ -245,11 +244,14 @@ fun FilterContent(
                     TransactionStatus.EXPIRED_PAYMENT,
                     TransactionStatus.PARTIAL_REFUND,
                     TransactionStatus.COMPLETED_REFUND,
+                    TransactionStatus.ABORT_PAYMENT
                 ),
                 statusSelected = formState.status,
             ) {
                 onEvent(FilterEvent.UpdateTransactionsStatus(it))
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             FilterValue(
                 filterType = formState.filterType,
@@ -257,7 +259,6 @@ fun FilterContent(
             ) { onEvent(FilterEvent.UpdateValue(it)) }
 
         }
-        Spacer(modifier = Modifier.padding(vertical = 10.dp))
 
         Button(
             onClick = {
@@ -304,5 +305,28 @@ fun PaymentTypeComponentPreview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun PaymentTypeComponentGetTransactionsPreview() {
+    AppSmartDemoPhastPayTheme {
+        FilterContent(
+            formState = FilterState(
+                filterType = FilterType.GET_PAYMENTS,
+                periodSelected = DatePeriod.TODAY,
+                startTime = "00:00",
+                endTime = "23:59",
+                startDate = "01/01/2025",
+                endDate = "02/12/2025"
+            ),
+            onEvent = {},
+            onClickFilter = {},
+            selectedService = ServiceType.ALL,
+            onChangeService = {}
+        )
+    }
+}
+
+
 
 

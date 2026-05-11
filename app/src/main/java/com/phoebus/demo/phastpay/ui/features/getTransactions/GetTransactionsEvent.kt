@@ -10,7 +10,9 @@ sealed interface GetListTransactionsEvent {
     ) : GetListTransactionsEvent
     data class UpdatePrintMerchantReceipt(val print: Boolean) : GetListTransactionsEvent
     data class UpdatePrintCustomerReceipt(val print: Boolean) : GetListTransactionsEvent
-    data class StartGet(val phastPayClient: PhastPayClient) : GetListTransactionsEvent
+    data object StartGet : GetListTransactionsEvent
+    data class UpdatePreviewMerchantReceipt(val preview: Boolean) : GetListTransactionsEvent
+    data class UpdatePreviewCustomerReceipt(val preview: Boolean) : GetListTransactionsEvent
     data class UpdateMessageError(val messageError: String?): GetListTransactionsEvent
     data class UpdateGetResult(val getTransactionsResult: PhastPayGetTransactionsResponse?): GetListTransactionsEvent
 

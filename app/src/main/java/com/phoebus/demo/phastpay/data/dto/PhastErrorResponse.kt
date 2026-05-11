@@ -1,8 +1,10 @@
 package com.phoebus.demo.phastpay.data.dto
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PhastErrorResponse(
-    @SerializedName("error_message")
+    @SerialName("error_message")
     val errorMessage: String
 )

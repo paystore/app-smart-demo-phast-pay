@@ -25,26 +25,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.progress.LoadingIndicator
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.theme.Green40
 import com.phoebus.demo.phastpay.ui.theme.RedError
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 @Composable
 fun IsPhastPayInstalledScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: IsPhastPayInstalledViewModel = viewModel()
+    viewModel: IsPhastPayInstalledViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(IsPhastPayInstalledEvent.StartCheck(phastPayClient))
+        viewModel.onEvent(IsPhastPayInstalledEvent.StartCheck)
     }
 
     Scaffold(

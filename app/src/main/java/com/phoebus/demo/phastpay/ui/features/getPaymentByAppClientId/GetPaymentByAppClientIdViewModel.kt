@@ -4,19 +4,28 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentByAppClientIdRequest
 import com.phoebus.demo.phastpay.services.GetPaymentByAppClientIdService
+import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GetPaymentByAppClientIdViewModel : ViewModel() {
+@HiltViewModel
+class GetPaymentByAppClientIdViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val getPaymentByAppClientIdService: GetPaymentByAppClientIdService,
+    private val json: Json
+) : ViewModel() {
     private val _state = mutableStateOf(GetPaymentByAppClientIdState());
     val state: State<GetPaymentByAppClientIdState> = _state;
 
     fun onEvent(event: GetPaymentByAppClientIdEvent) {
         when (event) {
             is GetPaymentByAppClientIdEvent.OnSubmit -> {
-                sendRequest(event.phastPayClient)
+                sendRequest()
             }
             is GetPaymentByAppClientIdEvent.UpdateAppClientIdPayment -> {
                 _state.value = _state.value.copy(appClientId = event.appClientId)
@@ -30,9 +39,8 @@ class GetPaymentByAppClientIdViewModel : ViewModel() {
         }
     }
 
-    private fun sendRequest(phastPayClient: PhastPayClient) {
+    private fun sendRequest() {
         viewModelScope.launch {
-            val getPaymentByAppClientIdService = GetPaymentByAppClientIdService()
             getPaymentByAppClientIdService.invoke(
                 phastPayClient,
                 PhastPayGetPaymentByAppClientIdRequest(
@@ -42,7 +50,7 @@ class GetPaymentByAppClientIdViewModel : ViewModel() {
                 when {
                     result.isSuccess -> {
                         val response = result.getOrNull()
-                        onEvent(GetPaymentByAppClientIdEvent.UpdateSuccessMessage(response?.toJson()))
+                        onEvent(GetPaymentByAppClientIdEvent.UpdateSuccessMessage(json.encodeToString(response)))
                     }
                     result.isFailure -> {
                         val exception = result.exceptionOrNull()

@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
@@ -26,14 +27,12 @@ import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RouteParams
 import com.phoebus.demo.phastpay.ui.navigation.RoutesConstants
 import com.phoebus.demo.phastpay.utils.DateUtils
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 @Composable
 fun GetTransactionsScreen(
     navController: NavController,
     params: RouteParams.GetTransactions,
-    phastPayClient: PhastPayClient,
-    viewModel: GetTransactionsViewModel = viewModel()
+    viewModel: GetTransactionsViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.state
@@ -72,7 +71,6 @@ fun GetTransactionsScreen(
                 formState = state,
                 formEvent = viewModel::onEvent,
                 navEvent = viewModel::onNavigationEvent,
-                phastPayClient = phastPayClient,
                 modifier = Modifier.padding(it)
             )
         }
@@ -85,7 +83,6 @@ fun GetTransactionsContent(
     formState: GetTransactionsState,
     formEvent: (GetListTransactionsEvent) -> Unit,
     navEvent: (GetTransactionsNavigationEvents) -> Unit,
-    phastPayClient: PhastPayClient,
     modifier: Modifier
 ) {
     val context = LocalContext.current;
@@ -111,18 +108,31 @@ fun GetTransactionsContent(
         CheckboxPrint(
             printCustomerReceiptChecked = formState.printCustomerReceipt,
             printMerchantReceiptChecked = formState.printMerchantReceipt,
+            previewCustomerReceiptChecked = formState.previewCustomerReceipt,
+            previewMerchantReceiptChecked = formState.previewMerchantReceipt,
             onPrintCustomerReceiptChange = {
                 formEvent(GetListTransactionsEvent.UpdatePrintCustomerReceipt(it))
             },
             onPrintMerchantReceiptChange = {
                 formEvent(GetListTransactionsEvent.UpdatePrintMerchantReceipt(it))
+            },
+            onPreviewCustomerReceiptChange = {
+                formEvent(GetListTransactionsEvent.UpdatePreviewCustomerReceipt(it))
+            },
+            onPreviewMerchantReceiptChange = {
+                formEvent(GetListTransactionsEvent.UpdatePreviewMerchantReceipt(it))
             }
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        PhButton(title = stringResource(R.string.check_button)) {
-            formEvent(GetListTransactionsEvent.StartGet(phastPayClient))
+        PhButton(
+            title = stringResource(R.string.check_button),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            formEvent(GetListTransactionsEvent.StartGet)
         }
 
         formState.errorMessage?.let {
@@ -139,12 +149,10 @@ fun GetTransactionsContent(
                     navEvent(GetTransactionsNavigationEvents.NavigateToHome)
                 },
                 title = stringResource(R.string.method_response),
-                message = formState.getListResult.toJson()
+                message = formState.getListResult
             )
         }
 
     }
 
 }
-
-

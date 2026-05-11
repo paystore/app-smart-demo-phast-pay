@@ -11,27 +11,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.dialogs.PhDialog
 import com.phoebus.demo.phastpay.ui.components.progress.LoadingIndicator
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RoutesConstants
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 
 @Composable
 fun SyncDataScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: SyncDataViewModel = viewModel()
+    viewModel: SyncDataViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(SyncDataEvent.StartSync(phastPayClient))
+        viewModel.onEvent(SyncDataEvent.StartSync)
     }
 
     LaunchedEffect(viewModel.navigationEvent) {

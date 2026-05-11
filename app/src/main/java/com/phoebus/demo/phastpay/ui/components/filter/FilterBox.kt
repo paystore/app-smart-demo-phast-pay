@@ -48,7 +48,7 @@ fun FilterBox(
                 label,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 15.dp)
+                modifier = Modifier.padding(bottom = 10.dp)
             )
         }
         Row(
@@ -83,14 +83,13 @@ fun SelectionBoxItem(
         content = {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 5.dp)
                     .clip(RoundedCornerShape(50.dp)),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     modifier = Modifier
-                        .padding(horizontal = 2.dp, vertical = 5.dp)
+                        .padding(horizontal = 1.dp, vertical = 3.dp)
                         .width(getScreenWidth() * 0.2f),
                     text = item.label,
                     fontSize = pxToSp(32f, LocalContext.current).sp,

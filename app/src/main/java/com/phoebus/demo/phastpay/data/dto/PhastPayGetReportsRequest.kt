@@ -1,24 +1,21 @@
 package com.phoebus.demo.phastpay.data.dto
 
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.phoebus.demo.phastpay.data.enums.ReportType
 import com.phoebus.demo.phastpay.data.enums.ServiceType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PhastPayGetReportsRequest(
-    @SerializedName("start_date")
-    val startDate: String,
+    @SerialName("start_date")
+    val startDate: String? = null,
 
-    @SerializedName("end_date")
-    val endDate: String,
+    @SerialName("end_date")
+    val endDate: String? = null,
 
-    @SerializedName("report_type")
+    @SerialName("report_type")
     val reportType: ReportType,
 
-    @SerializedName("service")
+    @SerialName("service")
     val service: ServiceType,
-) {
-    fun toJson(): String {
-        return Gson().toJson(this)
-    }
-}
+)

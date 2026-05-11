@@ -7,12 +7,21 @@ import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetTransactionsRequest
 import com.phoebus.demo.phastpay.services.GetTransactionsService
 import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GetTransactionsViewModel : ViewModel() {
+@HiltViewModel
+class GetTransactionsViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val getTransactionsService: GetTransactionsService,
+    private val json: Json
+    ) : ViewModel() {
     private val _state = mutableStateOf(GetTransactionsState())
     val state: State<GetTransactionsState> = _state
 
@@ -21,15 +30,17 @@ class GetTransactionsViewModel : ViewModel() {
     val navigationEvent: SharedFlow<GetTransactionsNavigationEvents> = _navigationEvent.asSharedFlow()
 
 
-    private suspend fun sendRequest(phastPayClient: PhastPayClient) {
+    private suspend fun sendRequest() {
         val phastPayGetTransactionsRequest = PhastPayGetTransactionsRequest(
             startDate = state.value.startDate,
             endDate = state.value.endDate,
             printMerchantReceipt = state.value.printMerchantReceipt,
-            printCustomerReceipt = state.value.printMerchantReceipt,
+            printCustomerReceipt = state.value.printCustomerReceipt,
+            previewCustomerReceipt = state.value.previewCustomerReceipt,
+            previewMerchantReceipt = state.value.previewMerchantReceipt
         )
-        val service = GetTransactionsService();
-        service.invoke(phastPayClient, phastPayGetTransactionsRequest).collect { result ->
+
+        getTransactionsService.invoke(phastPayClient, phastPayGetTransactionsRequest).collect { result ->
             when {
                 result.isSuccess -> {
                     val response = result.getOrNull()
@@ -66,12 +77,13 @@ class GetTransactionsViewModel : ViewModel() {
 
             is GetListTransactionsEvent.StartGet -> {
                 viewModelScope.launch {
-                    sendRequest(event.phastPayClient);
+                    sendRequest()
                 }
             }
 
             is GetListTransactionsEvent.UpdateGetResult -> {
-                _state.value = _state.value.copy(getListResult = event.getTransactionsResult)
+                val result = event.getTransactionsResult?.let { json.encodeToString(it) }
+                _state.value = _state.value.copy(getListResult = result)
             }
 
             is GetListTransactionsEvent.UpdatePrintCustomerReceipt -> {
@@ -80,6 +92,14 @@ class GetTransactionsViewModel : ViewModel() {
 
             is GetListTransactionsEvent.UpdatePrintMerchantReceipt -> {
                 _state.value = _state.value.copy(printMerchantReceipt = event.print)
+            }
+
+            is GetListTransactionsEvent.UpdatePreviewCustomerReceipt -> {
+                _state.value = _state.value.copy(previewCustomerReceipt = event.preview)
+            }
+
+            is GetListTransactionsEvent.UpdatePreviewMerchantReceipt -> {
+                _state.value = _state.value.copy(previewMerchantReceipt = event.preview)
             }
 
             is GetListTransactionsEvent.UpdateMessageError -> {

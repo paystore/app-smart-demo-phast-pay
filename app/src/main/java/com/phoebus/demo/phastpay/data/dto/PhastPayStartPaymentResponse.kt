@@ -1,23 +1,22 @@
 package com.phoebus.demo.phastpay.data.dto
 
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 class PhastPayStartPaymentResponse(
-    @SerializedName("app_client_id")
+    @SerialName("app_client_id")
     val appClientId: String? = null,
-    @SerializedName("date_time")
+    @SerialName("date_time")
     val dateTime: String? = null,
-    @SerializedName("iva")
+    @SerialName("iva")
     val iva: String? = null,
-    @SerializedName("status")
+    @SerialName("status")
     val status: String? = null,
-    @SerializedName("payment_id")
+    @SerialName("payment_id")
     val paymentId: String? = null,
-    @SerializedName("value")
-    val value: String? = null
-) {
-    fun toJson(): String {
-        return Gson().toJson(this)
-    }
-}
+    @SerialName("value")
+    val value: String? = null,
+    @SerialName("additional_value")
+    val additionalValue: String? = null
+)

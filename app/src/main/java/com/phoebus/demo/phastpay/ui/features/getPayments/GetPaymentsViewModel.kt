@@ -7,22 +7,27 @@ import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentsRequest
 import com.phoebus.demo.phastpay.services.GetPaymentsService
 import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class GetPaymentsViewModel : ViewModel() {
+@HiltViewModel
+class GetPaymentsViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val getPaymentsService: GetPaymentsService,
+) : ViewModel() {
     private val _state = mutableStateOf(GetPaymentsState())
     val state: State<GetPaymentsState> = _state
 
 
-    private suspend fun sendRequest(phastPayClient: PhastPayClient) {
+    private suspend fun sendRequest() {
         val phastPayGetPaymentsRequest = PhastPayGetPaymentsRequest(
             startDate = state.value.startDate,
             endDate = state.value.endDate,
             status = state.value.status,
             value = state.value.value
         )
-        val service = GetPaymentsService();
-        service.invoke(phastPayClient, phastPayGetPaymentsRequest).collect { result ->
+        getPaymentsService.invoke(phastPayClient, phastPayGetPaymentsRequest).collect { result ->
             when {
                 result.isSuccess -> {
                     val response = result.getOrNull()
@@ -55,7 +60,7 @@ class GetPaymentsViewModel : ViewModel() {
 
             is GetPaymentsEvent.StartGetPayments -> {
                 viewModelScope.launch {
-                    sendRequest(event.phastPayClient);
+                    sendRequest();
                 }
             }
 

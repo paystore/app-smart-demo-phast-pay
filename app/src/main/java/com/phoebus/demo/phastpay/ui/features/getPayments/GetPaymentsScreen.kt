@@ -17,21 +17,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.receipt.PhastItem
 import com.phoebus.demo.phastpay.ui.components.receipt.RefundsItem
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RouteParams
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 @Composable
 fun GetPaymentsScreen(
     navController: NavController,
     params: RouteParams.GetPayments,
-    phastPayClient: PhastPayClient,
-    viewModel: GetPaymentsViewModel = viewModel()
+    viewModel: GetPaymentsViewModel = hiltViewModel()
 ) {
 
     val state by viewModel.state
@@ -49,7 +47,7 @@ fun GetPaymentsScreen(
                 }
             )
         )
-        viewModel.onEvent(GetPaymentsEvent.StartGetPayments(phastPayClient))
+        viewModel.onEvent(GetPaymentsEvent.StartGetPayments)
     }
 
 
@@ -107,6 +105,7 @@ fun GetPaymentsContent(
                             service = item.service,
                             paymentId = item.paymentId,
                             value = item.value,
+                            additionalValue = item.additionalValue,
                             dateTime = item.dateTime,
                             iva = item.iva,
                             refunds = refunds

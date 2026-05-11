@@ -14,13 +14,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
@@ -32,8 +33,7 @@ import com.phoebus.phastpay.sdk.client.PhastPayClient
 @Composable
 fun GetRefundByIdScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: GetRefundByIdViewModel = viewModel()
+    viewModel: GetRefundByIdViewModel = hiltViewModel()
 ) {
     val state by viewModel.state
 
@@ -43,7 +43,6 @@ fun GetRefundByIdScreen(
         },
         content = {
             FindRefundByIdContent(
-                phastPayClient = phastPayClient,
                 formEvent = viewModel::onEvent,
                 formState = state,
                 modifier = Modifier.padding(it)
@@ -56,15 +55,12 @@ fun GetRefundByIdScreen(
 @Composable
 fun FindRefundByIdContent(
     modifier: Modifier = Modifier,
-    phastPayClient: PhastPayClient,
     formState: GetRefundByIdState,
     formEvent: (GetRefundByIdEvent) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     val refundId = formState.refundId
     val context = LocalContext.current
-    val printCustomerReceipt = formState.printCustomerReceipt
-    val printMerchantReceipt = formState.printMerchantReceipt
 
     Column(
         modifier = modifier
@@ -90,13 +86,21 @@ fun FindRefundByIdContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         CheckboxPrint(
-            printCustomerReceiptChecked = printCustomerReceipt,
-            printMerchantReceiptChecked = printMerchantReceipt,
+            printCustomerReceiptChecked = formState.printCustomerReceipt,
+            printMerchantReceiptChecked = formState.printMerchantReceipt,
+            previewCustomerReceiptChecked = formState.previewCustomerReceipt,
+            previewMerchantReceiptChecked = formState.previewMerchantReceipt,
             onPrintCustomerReceiptChange = {
-                formEvent(GetRefundByIdEvent.UpdatePrintCustomerReceipt(!printCustomerReceipt))
+                formEvent(GetRefundByIdEvent.UpdatePrintCustomerReceipt(it))
             },
             onPrintMerchantReceiptChange = {
-                formEvent(GetRefundByIdEvent.UpdatePrintMerchantReceipt(!printMerchantReceipt))
+                formEvent(GetRefundByIdEvent.UpdatePrintMerchantReceipt(it))
+            },
+            onPreviewCustomerReceiptChange = {
+                formEvent(GetRefundByIdEvent.UpdatePreviewCustomerReceipt(it))
+            },
+            onPreviewMerchantReceiptChange = {
+                formEvent(GetRefundByIdEvent.UpdatePreviewMerchantReceipt(it))
             }
         )
 
@@ -104,10 +108,12 @@ fun FindRefundByIdContent(
 
         PhButton(
             title = stringResource(R.string.check_button),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .align(Alignment.CenterHorizontally),
             enabled = formState.refundId.isNotEmpty()
         ) {
-            formEvent(GetRefundByIdEvent.OnSubmit(phastPayClient))
+            formEvent(GetRefundByIdEvent.OnSubmit)
         }
 
         formState.refundResult?.let {
@@ -119,7 +125,7 @@ fun FindRefundByIdContent(
                     formEvent(GetRefundByIdEvent.UpdateRefundByResult(null))
                 },
                 title = stringResource(R.string.method_response),
-                message = formState.refundResult.toJson()
+                message = formState.refundResult
             )
         }
 

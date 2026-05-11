@@ -4,8 +4,10 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -26,11 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
@@ -39,25 +39,18 @@ import com.phoebus.demo.phastpay.ui.components.dialogs.PhDialog
 import com.phoebus.demo.phastpay.ui.components.payment.InputValue
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RoutesConstants
-import com.phoebus.phastpay.sdk.client.PhastPayClient
-import java.util.UUID
 
 
 @Composable
 fun StartRefundScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: StartRefundViewModel = viewModel()
+    viewModel: StartRefundViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.onEvent(
-            StartRefundEvent.Initialize(
-                applicationId = "123456789",
-                applicationName = context.getString(R.string.app_name)
-            )
+            StartRefundEvent.Initialize
         )
     }
 
@@ -83,7 +76,6 @@ fun StartRefundScreen(
         content = {
             StartRefundContent(
                 formState = state,
-                phastPayClient = phastPayClient,
                 formEvent = viewModel::onEvent,
                 navEvent = viewModel::onNavigationEvent,
                 modifier = Modifier.padding(it)
@@ -96,7 +88,6 @@ fun StartRefundScreen(
 @Composable
 fun StartRefundContent(
     formState: StartRefundState,
-    phastPayClient: PhastPayClient,
     formEvent: (StartRefundEvent) -> Unit,
     navEvent: (StartRefundNavigationEvents) -> Unit,
     modifier: Modifier = Modifier
@@ -148,7 +139,7 @@ fun StartRefundContent(
 
             if (formState.sendPartialValue) {
                 InputValue(
-                    checked = formState.sendPartialValue,
+                    checked = true,
                     value = formState.value ?: "",
                     showCurrency = false,
                     onChangeValue = { formEvent(StartRefundEvent.UpdateValue(it)) }
@@ -158,20 +149,32 @@ fun StartRefundContent(
             CheckboxPrint(
                 printCustomerReceiptChecked = formState.printCustomerReceipt,
                 printMerchantReceiptChecked = formState.printMerchantReceipt,
+                previewCustomerReceiptChecked = formState.previewCustomerReceipt,
+                previewMerchantReceiptChecked = formState.previewMerchantReceipt,
                 onPrintCustomerReceiptChange = {
                     formEvent(StartRefundEvent.UpdatePrintCustomerReceipt(it))
                 },
                 onPrintMerchantReceiptChange = {
                     formEvent(StartRefundEvent.UpdatePrintMerchantReceipt(it))
+                },
+                onPreviewCustomerReceiptChange = {
+                    formEvent(StartRefundEvent.UpdatePreviewCustomerReceipt(it))
+                },
+                onPreviewMerchantReceiptChange = {
+                    formEvent(StartRefundEvent.UpdatePreviewMerchantReceipt(it))
                 }
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             PhButton(
                 title = stringResource(R.string.start_refund),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .align(Alignment.CenterHorizontally),
                 enabled = formState.paymentId.isNotEmpty()
             ) {
-                formEvent(StartRefundEvent.SubmitRefund(phastPayClient))
+                formEvent(StartRefundEvent.SubmitRefund)
             }
 
             formState.refundResult?.let {
@@ -183,7 +186,7 @@ fun StartRefundContent(
                         navEvent(StartRefundNavigationEvents.NavigateToHome)
                         formEvent(StartRefundEvent.UpdateSuccessMessage(null))
                     },
-                    message = formState.refundResult.toJson()
+                    message = formState.refundResult
                 )
             }
 

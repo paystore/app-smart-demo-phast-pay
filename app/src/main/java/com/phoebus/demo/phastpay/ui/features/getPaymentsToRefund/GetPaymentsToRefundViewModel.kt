@@ -7,9 +7,18 @@ import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentsToRefundRequest
 import com.phoebus.demo.phastpay.services.GetPaymentsToRefundService
 import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GetPaymentsToRefundViewModel : ViewModel() {
+@HiltViewModel
+class GetPaymentsToRefundViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val getPaymentsToRefundService: GetPaymentsToRefundService,
+    private val json: Json
+) : ViewModel() {
 
     private val _state = mutableStateOf(GetPaymentsToRefundState())
     val state: State<GetPaymentsToRefundState> = _state
@@ -25,7 +34,9 @@ class GetPaymentsToRefundViewModel : ViewModel() {
             }
 
             is GetPaymentsToRefundEvent.UpdateRefundResult -> {
-                _state.value = _state.value.copy(refundResult = event.refundResult)
+                val result = event.refundResult?.let { json.encodeToString(it) }
+                _state.value = _state.value.copy(refundResult = result)
+
             }
 
             is GetPaymentsToRefundEvent.UpdateErrorMessage -> {
@@ -33,12 +44,12 @@ class GetPaymentsToRefundViewModel : ViewModel() {
             }
 
             is GetPaymentsToRefundEvent.OnSubmit -> {
-                onSubmit(event.phastPayClient)
+                onSubmit()
             }
 
             is GetPaymentsToRefundEvent.StartGet -> {
                 viewModelScope.launch {
-                    onSubmit(event.phastPayClient);
+                    onSubmit()
                 }
             }
 
@@ -56,16 +67,28 @@ class GetPaymentsToRefundViewModel : ViewModel() {
             is GetPaymentsToRefundEvent.UpdatePrintMerchantReceipt -> {
                 _state.value = _state.value.copy(printMerchantReceipt = event.print)
             }
+
+            is GetPaymentsToRefundEvent.UpdatePreviewCustomerReceipt -> {
+                _state.value = _state.value.copy(previewCustomerReceipt = event.preview)
+            }
+
+            is GetPaymentsToRefundEvent.UpdatePreviewMerchantReceipt -> {
+                _state.value = _state.value.copy(previewMerchantReceipt = event.preview)
+            }
         }
     }
 
-    private fun onSubmit(phastPayClient: PhastPayClient) {
+    private fun onSubmit() {
         viewModelScope.launch {
             val request = PhastPayGetPaymentsToRefundRequest(
                 startDate = state.value.startDate,
                 endDate = state.value.endDate,
+                printCustomerReceipt = state.value.printCustomerReceipt,
+                printMerchantReceipt = state.value.printMerchantReceipt,
+                previewCustomerReceipt = state.value.previewCustomerReceipt,
+                previewMerchantReceipt = state.value.previewMerchantReceipt
             )
-            GetPaymentsToRefundService().invoke(phastPayClient, request).collect { result ->
+            getPaymentsToRefundService.invoke(phastPayClient, request).collect { result ->
                 result.onSuccess { response ->
                     onEvent(GetPaymentsToRefundEvent.UpdateRefundResult(response))
                 }

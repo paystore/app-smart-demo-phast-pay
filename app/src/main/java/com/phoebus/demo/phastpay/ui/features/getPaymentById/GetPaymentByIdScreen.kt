@@ -14,26 +14,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
-import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
 import com.phoebus.demo.phastpay.ui.components.button.PhButton
 import com.phoebus.demo.phastpay.ui.components.dialogs.PhDialog
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 @Composable
 fun GetPaymentByIdScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: GetPaymentByIdViewModel = viewModel()
+    viewModel: GetPaymentByIdViewModel = hiltViewModel()
 ) {
     val state by viewModel.state
 
@@ -43,7 +41,6 @@ fun GetPaymentByIdScreen(
         },
         content = {
             GetPaymentByIdContent(
-                phastPayClient = phastPayClient,
                 formEvent = viewModel::onEvent,
                 formState = state,
                 modifier = Modifier.padding(it)
@@ -56,15 +53,12 @@ fun GetPaymentByIdScreen(
 @Composable
 fun GetPaymentByIdContent(
     modifier: Modifier = Modifier,
-    phastPayClient: PhastPayClient,
     formState: GetPaymentByIdState,
     formEvent: (GetPaymentByIdEvent) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     val paymentId = formState.paymentId
     val context = LocalContext.current
-    val printCustomerReceipt = formState.printCustomerReceipt
-    val printMerchantReceipt = formState.printMerchantReceipt
 
     Column(
         modifier = modifier
@@ -89,25 +83,14 @@ fun GetPaymentByIdContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        CheckboxPrint(
-            printCustomerReceiptChecked = printCustomerReceipt,
-            printMerchantReceiptChecked = printMerchantReceipt,
-            onPrintCustomerReceiptChange = {
-                formEvent(GetPaymentByIdEvent.UpdatePrintCustomerReceipt(!printCustomerReceipt))
-            },
-            onPrintMerchantReceiptChange = {
-                formEvent(GetPaymentByIdEvent.UpdatePrintMerchantReceipt(!printMerchantReceipt))
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         PhButton(
             title = stringResource(R.string.check_button),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .align(Alignment.CenterHorizontally),
             enabled = formState.paymentId.isNotEmpty()
         ) {
-            formEvent(GetPaymentByIdEvent.OnSubmit(phastPayClient))
+            formEvent(GetPaymentByIdEvent.OnSubmit)
         }
 
         formState.successMessage?.let {
@@ -119,7 +102,7 @@ fun GetPaymentByIdContent(
                     formEvent(GetPaymentByIdEvent.UpdateSuccessMessage(null))
                 },
                 title = stringResource(R.string.method_response),
-                message = formState.successMessage
+                message = it
             )
         }
 

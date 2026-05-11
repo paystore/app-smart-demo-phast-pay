@@ -4,7 +4,7 @@ import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 sealed interface IsPhastPayInstalledEvent {
     data class UpdateLoading(val loading: Boolean) : IsPhastPayInstalledEvent
-    data class StartCheck(val phastPayClient: PhastPayClient) : IsPhastPayInstalledEvent
+    data object StartCheck : IsPhastPayInstalledEvent
     data class UpdateIsAppInstalled(val isAppInstalled: Boolean) : IsPhastPayInstalledEvent
     data class UpdateErrorMessage(val message: String?) : IsPhastPayInstalledEvent
 }

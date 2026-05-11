@@ -5,8 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 data class LastTransaction(
-    var appClientId: String? = null,
-    var paymentId: String? = null
+    val appClientId: String? = null,
+    val paymentId: String? = null,
+    val refundId: String? = null
 )
 
 object LastTransactionState {
@@ -21,11 +22,19 @@ object LastTransactionState {
         return lastTransaction.paymentId
     }
 
+    fun getRefundId(): String? {
+        return lastTransaction.refundId
+    }
+
     fun updateAppClientId(appClientId: String) {
         lastTransaction = lastTransaction.copy(appClientId = appClientId)
     }
 
     fun updatePaymentId(paymentId: String) {
         lastTransaction = lastTransaction.copy(paymentId = paymentId)
+    }
+
+    fun updateRefundId(refundId: String) {
+        lastTransaction = lastTransaction.copy(refundId = refundId)
     }
 }

@@ -17,10 +17,11 @@ import com.phoebus.demo.phastpay.data.enums.Service
 fun ServiceSelector(
     service: Service,
     onPhastTypeSelected: (Service) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    allowedServices: List<Service>? = null
 ) {
 
-    val items = buildList {
+    val allItems = buildList {
         add(
             FilterItem(
                 label = stringResource(R.string.mbway_acquirer),
@@ -33,6 +34,18 @@ fun ServiceSelector(
                 value = Service.BIZUM
             )
         )
+        add(
+            FilterItem(
+                label = stringResource(R.string.twint_acquirer),
+                value = Service.TWINT
+            )
+        )
+    }
+
+    val items = if (allowedServices != null) {
+        allItems.filter { allowedServices.contains(it.value) }
+    } else {
+        allItems
     }
 
     val onSelectedItem: (FilterItem) -> Unit = { item ->
@@ -74,4 +87,3 @@ fun PaymentTypeComponentPreviewDark() {
         )
     }
 }
-

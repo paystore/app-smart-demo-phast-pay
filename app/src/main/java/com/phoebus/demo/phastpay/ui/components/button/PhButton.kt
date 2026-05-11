@@ -1,8 +1,9 @@
 package com.phoebus.demo.phastpay.ui.components.button
 
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,10 +14,13 @@ fun PhButton(
     title: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    colors: ButtonColors = ButtonDefaults.elevatedButtonColors(),
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    ),
     onClick: () -> Unit
 ) {
-    ElevatedButton(
+    Button(
         modifier = modifier,
         onClick = {
             onClick()

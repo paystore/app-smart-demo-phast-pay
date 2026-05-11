@@ -14,25 +14,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.button.PhButton
 import com.phoebus.demo.phastpay.ui.components.dialogs.PhDialog
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
-import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 @Composable
 fun GetPaymentByAppClientIdScreen(
     navController: NavController,
-    phastPayClient: PhastPayClient,
-    viewModel: GetPaymentByAppClientIdViewModel = viewModel()
+    viewModel: GetPaymentByAppClientIdViewModel = hiltViewModel()
 ) {
     val state by viewModel.state
 
@@ -42,7 +41,6 @@ fun GetPaymentByAppClientIdScreen(
         },
         content = {
             FindPaymentByAppClientIdContent(
-                phastPayClient = phastPayClient,
                 formEvent = viewModel::onEvent,
                 formState = state,
                 modifier = Modifier.padding(it)
@@ -55,7 +53,6 @@ fun GetPaymentByAppClientIdScreen(
 @Composable
 fun FindPaymentByAppClientIdContent(
     modifier: Modifier = Modifier,
-    phastPayClient: PhastPayClient,
     formState: GetPaymentByAppClientIdState,
     formEvent: (GetPaymentByAppClientIdEvent) -> Unit = {}
 ) {
@@ -88,10 +85,12 @@ fun FindPaymentByAppClientIdContent(
 
         PhButton(
             title = stringResource(R.string.check_button),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .align(Alignment.CenterHorizontally),
             enabled = formState.appClientId.isNotEmpty()
         ) {
-            formEvent(GetPaymentByAppClientIdEvent.OnSubmit(phastPayClient))
+            formEvent(GetPaymentByAppClientIdEvent.OnSubmit)
         }
 
         formState.successMessage?.let {

@@ -4,7 +4,7 @@ import com.phoebus.phastpay.sdk.client.PhastPayClient
 
 sealed interface SyncDataEvent {
     data class UpdateLoading(val loading: Boolean): SyncDataEvent
-    data class StartSync(val phastPayClient: PhastPayClient): SyncDataEvent
+    data object StartSync: SyncDataEvent
     data class UpdateDialogMessage(val message: String?): SyncDataEvent
 }
 

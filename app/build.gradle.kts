@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlinKsp)
+    alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.kotlinx.serialization)
+
 }
 
 android {
@@ -12,8 +16,8 @@ android {
         applicationId = "com.phoebus.demo.phastpay"
         minSdk = 22
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0.0"
+        versionCode = 2
+        versionName = "1.0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,7 +48,11 @@ android {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation(libs.libphonenumber)
+    implementation(libs.zxing)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -53,7 +61,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.gson)
     implementation(libs.compose.material.icons)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -62,4 +69,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.serialization.json)
 }

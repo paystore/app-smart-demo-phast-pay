@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.data.enums.ServiceType
 import com.phoebus.demo.phastpay.data.enums.TransactionStatus
-import com.phoebus.demo.phastpay.ui.components.filter.statusToDisplayName
+import com.phoebus.demo.phastpay.data.enums.getResId
 import com.phoebus.demo.phastpay.ui.components.payment.getCurrencyFormat
 import com.phoebus.demo.phastpay.ui.theme.YellowLight
 import com.phoebus.demo.phastpay.utils.CurrencyType
@@ -46,7 +46,8 @@ fun PhastItem(
     paymentId: String? = "",
     status: String? = "",
     value: String? = "",
-    iva: String? = "",
+    additionalValue: String? = null,
+    iva: String? = null,
     dateTime: String? = "",
     service: String? = "",
     appClientId: String? = null,
@@ -59,13 +60,23 @@ fun PhastItem(
         color = YellowLight
     ) {
         val dateTime = DateUtils.formatDateStrUTCToStrLocal(dateTime ?: "")
-        val transactionStatus = statusToDisplayName(
-            TransactionStatus.fromString(status ?: "")
-        )
+        val transactionStatus = stringResource(TransactionStatus.fromString(status ?: "").getResId())
         val paymentValue = formatAmount(
             value,
             currency
         )
+        val additionalValueFormatted = additionalValue?.let {
+            formatAmount(
+                additionalValue,
+                currency
+            )
+        }
+        val ivaFormatted = iva?.let {
+            formatAmount(
+                iva,
+                currency
+            )
+        }
         val serviceName = ServiceType.fromString(
             service ?: ""
         )
@@ -81,7 +92,15 @@ fun PhastItem(
             TextItem(
                 text = "${stringResource(R.string.filter_value_title)}: $paymentValue"
             )
-            TextItem(text = "${stringResource(R.string.iva_label)}: ${formatValue(iva)}")
+            additionalValueFormatted?.let {
+                TextItem(
+                    text = "${stringResource(R.string.filter_additional_value_title)}: $it"
+                )
+            }
+            ivaFormatted?.let {
+                TextItem(text = "${stringResource(R.string.iva_label)}: $it")
+            }
+
             TextItem(
                 text = "${stringResource(R.string.filter_service_title)}: $serviceName"
             )
@@ -122,9 +141,7 @@ private fun PrintRefunds(refunds: List<RefundsItem>?, currency: String?) {
                         refund.valor,
                         currency
                     )
-                    val refundStatus = statusToDisplayName(
-                        TransactionStatus.fromString(refund.status ?: "")
-                    )
+                    val refundStatus = stringResource(TransactionStatus.fromString(refund.status ?: "").getResId())
                     HorizontalDivider()
                     refund.refundId?.let {
                         TextWithCopyIcon("refundId", it)

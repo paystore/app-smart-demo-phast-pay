@@ -33,6 +33,12 @@ fun FilterService(
             )
         )
 
+        add(
+            FilterItem(
+                label = stringResource(R.string.twint_acquirer),
+                value = ServiceType.TWINT
+            )
+        )
 
         add(
             FilterItem(

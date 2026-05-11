@@ -4,19 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.services.IsPhastPayInstalledService
 import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class IsPhastPayInstalledViewModel() : ViewModel() {
+@HiltViewModel
+class IsPhastPayInstalledViewModel @Inject constructor(private val phastPayClient: PhastPayClient ) : ViewModel() {
 
     private val _state = MutableStateFlow(IsPhastPayInstalledState())
     val state: StateFlow<IsPhastPayInstalledState> = _state.asStateFlow()
 
 
-    private suspend fun checkAppInstalled(phastPayClient: PhastPayClient) {
+    private suspend fun checkAppInstalled() {
         val isPhastPayInstalledService = IsPhastPayInstalledService();
         isPhastPayInstalledService.invoke(
             phastPayClient,
@@ -58,7 +61,7 @@ class IsPhastPayInstalledViewModel() : ViewModel() {
 
             is IsPhastPayInstalledEvent.StartCheck -> {
                 viewModelScope.launch {
-                    checkAppInstalled(event.phastPayClient)
+                    checkAppInstalled()
                 }
             }
         }

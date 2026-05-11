@@ -9,27 +9,43 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PhastpayPrimaryDark,
+    onPrimary = Color(0xFF002E68), // Texto azul bem escuro sobre o primário claro
+
+    secondary = PhastpaySelectedDark,
+    onSecondary = Color(0xFF003351),
+
+    primaryContainer = PhastpayContainerDark,
+    onPrimaryContainer = Color(0xFFDDE7FF),
+
+    background = PhastpayBackgroundDark,
+    onBackground = Color(0xFFE2E2E6), // Texto esbranquiçado
+
+    surface = PhastpaySurfaceDark,
+    onSurface = Color(0xFFE2E2E6),
+
+    error = Color(0xFFFFB4AB), // Um vermelho mais rosado/pastel para o modo escuro
+    onError = Color(0xFF690005)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = PhastpayPrimary,
+    onPrimary = Color.White, // Texto branco sobre o azul primário
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
+    secondary = PhastpaySelected,
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+
+    primaryContainer = PhastpayContainer,
+    onPrimaryContainer = Color(0xFF1A2B4D), // Texto azul escuro sobre o fundo claro
+
+    background = PhastpayBackground,
+    onBackground = PhastpayOnBackground,
+
+    surface = Color.White,
+    onSurface = PhastpayOnBackground
 )
 
 @Composable

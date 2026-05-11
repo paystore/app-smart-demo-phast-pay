@@ -2,6 +2,8 @@ package com.phoebus.demo.phastpay.ui.navigation
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptionsBuilder
+import com.phoebus.demo.phastpay.utils.JsonUtils
+import kotlinx.serialization.encodeToString
 
 sealed class NavDestination(
     val route: String
@@ -9,57 +11,103 @@ sealed class NavDestination(
     data object Home : NavDestination(
         route = RoutesConstants.ROUTE_HOME
     )
+
     data object StartPayment : NavDestination(
         route = RoutesConstants.ROUTE_START_PAYMENT
     )
+    data object StartPaymentApi : NavDestination(
+        route = RoutesConstants.ROUTE_START_PAYMENT_API
+    )
+
     data object StartRefund : NavDestination(
         route = RoutesConstants.ROUTE_START_REFUND
     )
+
     data object GetPaymentMenu : NavDestination(
         route = RoutesConstants.ROUTE_GET_PAYMENT_MENU
     )
+
     data object GetPaymentById : NavDestination(
         route = RoutesConstants.ROUTE_GET_PAYMENT_ID
     )
+
     data object GetRefundById : NavDestination(
         route = RoutesConstants.ROUTE_GET_REFUND_ID
     )
+
     data object GetPaymentByAppClientId : NavDestination(
         route = RoutesConstants.ROUTE_GET_APP_CLIENT_ID
     )
+
     data object GetPayments : NavDestination(
         route = "${RoutesConstants.ROUTE_GET_PAYMENTS}/${RoutesConstants.PARAMS}"
     )
+
     data object GetPaymentsFilter : NavDestination(
         route = RoutesConstants.ROUTE_GET_PAYMENTS_FILTER
     )
+
     data object GetPaymentsToRefund : NavDestination(
         route = "${RoutesConstants.ROUTE_GET_PAYMENT_TO_REFUND}/${RoutesConstants.PARAMS}"
     )
+
     data object GetReports : NavDestination(
         route = "${RoutesConstants.ROUTE_GET_REPORTS}/${RoutesConstants.PARAMS}"
     )
+
     data object SyncData : NavDestination(
         route = RoutesConstants.ROUTE_SYNC_DATA
     )
+
     data object CheckInstalled : NavDestination(
         route = RoutesConstants.ROUTE_CHECK_INSTALLED_APP
     )
+
     data object GetTransactionsFilter : NavDestination(
         route = RoutesConstants.ROUTE_GET_TRANSACTIONS_FILTER
     )
+
+    data object StartPaymentMenu : NavDestination(
+        route = RoutesConstants.ROUTE_START_PAYMENT_MENU
+    )
+
     data object GetTransactions : NavDestination(
         route = "${RoutesConstants.ROUTE_GET_TRANSACTIONS}/${RoutesConstants.PARAMS}"
     )
+
     data object GetPaymentsToRefundFilter : NavDestination(
         route = RoutesConstants.ROUTE_GET_REFUNDS_FILTER
     )
+
+    data object GetPaymentsToRefundMenu : NavDestination(
+        route = RoutesConstants.ROUTE_GET_PAYMENT_TO_REFUND_MENU
+    )
+
     data object GetReportsFilter : NavDestination(
         route = RoutesConstants.ROUTE_GET_REPORTS_FILTER
     )
 
     data object GetAvailableServices : NavDestination(
         route = RoutesConstants.ROUTE_GET_AVAILABLE_SERVICES
+    )
+    data object RegisterNotify : NavDestination(
+        route = RoutesConstants.ROUTE_REGISTER_NOTIFY
+    )
+
+    data object GetQrCode : NavDestination(
+        route = RoutesConstants.ROUTE_GET_QRCODE
+    )
+
+    data object AbortPayment : NavDestination(
+        route = RoutesConstants.ROUTE_ABORT_PAYMENT
+    )
+
+    data object PrintReceipt : NavDestination(
+        route = RoutesConstants.ROUTE_PRINT_RECEIPT
+    )
+
+    data object GetReportsMenu : NavDestination(
+        route = RoutesConstants.ROUTE_GET_REPORTS_MENU
     )
 }
 
@@ -72,7 +120,7 @@ class GetPaymentsRoute(
     ) {
         navController.navigate(
             NavDestination.GetPayments.route
-                .replace(RoutesConstants.PARAMS, params.toJson()),
+                .replace(RoutesConstants.PARAMS, JsonUtils.json.encodeToString(params)),
             builder
         )
     }
@@ -87,7 +135,7 @@ class GetPaymentsToRefundRoute(
     ) {
         navController.navigate(
             NavDestination.GetPaymentsToRefund.route
-                .replace(RoutesConstants.PARAMS, params.toJson()),
+                .replace(RoutesConstants.PARAMS, JsonUtils.json.encodeToString(params)),
             builder
         )
     }
@@ -102,7 +150,7 @@ class GetTransactionsRoute(
     ) {
         navController.navigate(
             NavDestination.GetTransactions.route
-                .replace(RoutesConstants.PARAMS, params.toJson()),
+                .replace(RoutesConstants.PARAMS, JsonUtils.json.encodeToString(params)),
             builder
         )
     }
@@ -117,7 +165,7 @@ class GetReportsRoute(
     ) {
         navController.navigate(
             NavDestination.GetReports.route
-                .replace(RoutesConstants.PARAMS, params.toJson()),
+                .replace(RoutesConstants.PARAMS, JsonUtils.json.encodeToString(params)),
             builder
         )
     }

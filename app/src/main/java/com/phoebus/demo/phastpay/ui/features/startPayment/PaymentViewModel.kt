@@ -4,10 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.data.dto.PhastPayStartPaymentRequest
+import com.phoebus.demo.phastpay.data.enums.AdditionalType
+import com.phoebus.demo.phastpay.data.enums.Service
+import com.phoebus.demo.phastpay.data.repositories.DeviceRepository
 import com.phoebus.demo.phastpay.services.StartPaymentService
 import com.phoebus.demo.phastpay.utils.ConstantsUtils
-import com.phoebus.demo.phastpay.data.enums.Service
 import com.phoebus.phastpay.sdk.client.PhastPayClient
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,10 +19,19 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.Locale
+import java.util.UUID
+import javax.inject.Inject
 
-
-class PaymentViewModel : ViewModel() {
+@HiltViewModel
+class PaymentViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val startPaymentService: StartPaymentService,
+    private val json: Json,
+    private val deviceRepository: DeviceRepository
+) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
     val state: StateFlow<PaymentState> = _state.asStateFlow()
@@ -41,8 +53,7 @@ class PaymentViewModel : ViewModel() {
         }
     }
 
-    private suspend fun requestPayment(phastPayClient: PhastPayClient) {
-        val startPaymentService = StartPaymentService()
+    private suspend fun requestPayment() {
         startPaymentService.invoke(
             phastPayClient,
             PhastPayStartPaymentRequest(
@@ -50,12 +61,16 @@ class PaymentViewModel : ViewModel() {
                 applicationId = state.value.applicationId,
                 applicationName = state.value.applicationName,
                 service = Service.valueOf(state.value.service),
-                value = if(state.value.sendValue) valueToSend(state.value.value) else null,
-                currency = if(state.value.sendValue) state.value.currency else null,
+                value = if (state.value.sendValue) valueToSend(state.value.value) else null,
+                currency = if (state.value.sendValue || state.value.sendTipValue) state.value.currency else null,
                 printCustomerReceipt = state.value.printCustomerReceipt,
                 printMerchantReceipt = state.value.printMerchantReceipt,
-                phoneNumber = if (state.value.sendPhoneNumber) state.value.phoneNumber else null,
-                countyCode = if (state.value.sendPhoneNumber) state.value.countryCode else null,
+                previewCustomerReceipt = state.value.previewCustomerReceipt,
+                previewMerchantReceipt = state.value.previewMerchantReceipt,
+                phoneNumber = if (state.value.service != Service.TWINT.name && state.value.sendPhoneNumber) state.value.phoneNumber else null,
+                countyCode = if (state.value.service != Service.TWINT.name && state.value.sendPhoneNumber) state.value.countryCode else null,
+                additionalValue = valueToSend(state.value.additionalValue),
+                additionalType = if(state.value.sendTipValue) AdditionalType.TIP else null,
                 customerName = if (state.value.switchAdditionalInfo) state.value.customerName else null,
                 customerEmail = if (state.value.switchAdditionalInfo) state.value.customerEmail else null
             )
@@ -63,7 +78,7 @@ class PaymentViewModel : ViewModel() {
             when {
                 result.isSuccess -> {
                     val response = result.getOrNull()
-                    onEvent(PaymentEvent.UpdateSuccessMessage(response?.toJson()))
+                    onEvent(PaymentEvent.UpdateSuccessMessage(json.encodeToString(response)))
                 }
 
                 result.isFailure -> {
@@ -81,9 +96,9 @@ class PaymentViewModel : ViewModel() {
             is PaymentEvent.Initialize -> {
                 _state.update {
                     it.copy(
-                        appClientId = event.appClientId,
-                        applicationId = event.applicationId,
-                        applicationName = event.applicationName
+                        appClientId = UUID.randomUUID().toString(),
+                        applicationId = deviceRepository.getPackageName(),
+                        applicationName = deviceRepository.getAppName()
                     )
                 }
             }
@@ -112,6 +127,14 @@ class PaymentViewModel : ViewModel() {
                 _state.update { it.copy(printMerchantReceipt = event.print) }
             }
 
+            is PaymentEvent.UpdatePreviewCustomerReceipt -> {
+                _state.update { it.copy(previewCustomerReceipt = event.preview) }
+            }
+
+            is PaymentEvent.UpdatePreviewMerchantReceipt -> {
+                _state.update { it.copy(previewMerchantReceipt = event.preview) }
+            }
+
             is PaymentEvent.UpdateSendPhoneNumber -> {
                 _state.update { it.copy(sendPhoneNumber = event.sendPhone) }
             }
@@ -122,6 +145,14 @@ class PaymentViewModel : ViewModel() {
 
             is PaymentEvent.UpdateCountryCode -> {
                 _state.update { it.copy(countryCode = event.countryCode, phoneNumber = null) }
+            }
+
+            is PaymentEvent.UpdateSendTipValue -> {
+                _state.update { it.copy(sendTipValue = event.sendTip) }
+            }
+
+            is PaymentEvent.UpdateTipValue -> {
+                _state.update { it.copy(additionalValue = event.tipValue) }
             }
 
             is PaymentEvent.SendAdditionalInfo -> {
@@ -138,7 +169,7 @@ class PaymentViewModel : ViewModel() {
 
             is PaymentEvent.SubmitPayment -> {
                 viewModelScope.launch {
-                    requestPayment(event.phastPayClient)
+                    requestPayment()
                 }
             }
 
@@ -165,12 +196,13 @@ class PaymentViewModel : ViewModel() {
             val cents = nValue / 100
             String.format(Locale.ENGLISH, "%.2f", cents)
         } catch (e: NumberFormatException) {
+            Log.e(ConstantsUtils.TAG, "Error formatting value to currency: ${e.message}")
             "0.00"
         }
     }
 
     private fun valueToSend(value: String?): String? {
-        if (value.isNullOrEmpty()) return value;
-        return formatToCurrency(value);
+        if (value.isNullOrEmpty()) return value
+        return formatToCurrency(value)
     }
 }

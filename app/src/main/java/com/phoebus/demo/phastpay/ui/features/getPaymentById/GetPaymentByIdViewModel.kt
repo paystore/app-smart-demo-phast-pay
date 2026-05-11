@@ -7,25 +7,28 @@ import androidx.lifecycle.viewModelScope
 import com.phoebus.phastpay.sdk.client.PhastPayClient
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentByIdRequest
 import com.phoebus.demo.phastpay.services.GetPaymentByIdService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GetPaymentByIdViewModel : ViewModel() {
+@HiltViewModel
+class GetPaymentByIdViewModel @Inject constructor(
+    private val phastPayClient: PhastPayClient,
+    private val getPaymentByIdService: GetPaymentByIdService,
+    private val json: Json
+) : ViewModel() {
     private val _state = mutableStateOf(GetPaymentByIdState());
     val state: State<GetPaymentByIdState> = _state;
 
     fun onEvent(event: GetPaymentByIdEvent) {
         when (event) {
             is GetPaymentByIdEvent.OnSubmit -> {
-                sendRequest(event.phastPayClient)
+                sendRequest()
             }
             is GetPaymentByIdEvent.UpdatePaymentById -> {
                 _state.value = _state.value.copy(paymentId = event.paymentId)
-            }
-            is GetPaymentByIdEvent.UpdatePrintCustomerReceipt -> {
-                _state.value = _state.value.copy(printCustomerReceipt = event.print)
-            }
-            is GetPaymentByIdEvent.UpdatePrintMerchantReceipt -> {
-                _state.value = _state.value.copy(printMerchantReceipt = event.print)
             }
             is GetPaymentByIdEvent.UpdateErrorMessage -> {
                 _state.value = _state.value.copy(errorMessage = event.message)
@@ -36,22 +39,18 @@ class GetPaymentByIdViewModel : ViewModel() {
         }
     }
 
-    private fun sendRequest(phastPayClient: PhastPayClient) {
+    private fun sendRequest() {
         viewModelScope.launch {
-            val getPaymentByIdService = GetPaymentByIdService()
-
             getPaymentByIdService.invoke(
                 phastPayClient,
                 PhastPayGetPaymentByIdRequest(
-                    paymentId = state.value.paymentId,
-                    printCustomerReceipt = state.value.printCustomerReceipt,
-                    printMerchantReceipt = state.value.printMerchantReceipt
+                    paymentId = state.value.paymentId
                 )
             ).collect { result ->
                 when {
                     result.isSuccess -> {
                         val response = result.getOrNull()
-                        onEvent(GetPaymentByIdEvent.UpdateSuccessMessage(response?.toJson()))
+                        onEvent(GetPaymentByIdEvent.UpdateSuccessMessage(json.encodeToString(response)))
                     }
                     result.isFailure -> {
                         val exception = result.exceptionOrNull()

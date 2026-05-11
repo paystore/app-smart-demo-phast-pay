@@ -3,6 +3,7 @@ package com.phoebus.demo.phastpay.data.enums
 enum class ServiceType {
     ALL,
     BIZUM,
+    TWINT,
     MBWAY;
 
     companion object {

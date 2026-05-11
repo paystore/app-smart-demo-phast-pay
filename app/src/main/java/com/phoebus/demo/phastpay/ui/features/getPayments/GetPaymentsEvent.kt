@@ -11,7 +11,7 @@ sealed interface GetPaymentsEvent {
         val status: List<TransactionStatus>,
         val value: String?
     ) : GetPaymentsEvent
-    data class StartGetPayments(val phastPayClient: PhastPayClient) : GetPaymentsEvent
+    data object StartGetPayments : GetPaymentsEvent
     data class UpdateMessageError(val messageError: String?): GetPaymentsEvent
     data class UpdatePaymentResult(val paymentListResult: PhastPayGetPaymentsResponse?): GetPaymentsEvent
 

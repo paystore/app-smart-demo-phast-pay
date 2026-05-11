@@ -1,13 +1,10 @@
 package com.phoebus.demo.phastpay.data.dto
 
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PhastPaySyncronizeResponse (
-    @SerializedName("result")
+    @SerialName("result")
     val result: Boolean
-){
-    fun toJson(): String {
-        return Gson().toJson(this)
-    }
-}
+)
