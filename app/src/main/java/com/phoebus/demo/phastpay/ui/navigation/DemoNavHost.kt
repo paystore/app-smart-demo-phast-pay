@@ -7,8 +7,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.google.gson.Gson
 import com.phoebus.demo.phastpay.data.enums.FilterType
+import com.phoebus.demo.phastpay.utils.JsonUtils
 import com.phoebus.demo.phastpay.ui.features.isPhastPayInstalled.IsPhastPayInstalledScreen
 import com.phoebus.demo.phastpay.ui.features.getPaymentByAppClientId.GetPaymentByAppClientIdScreen
 import com.phoebus.demo.phastpay.ui.features.getPaymentById.GetPaymentByIdScreen
@@ -37,17 +37,17 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         composable(
             route = NavDestination.Home.route
         ) {
-            HomeScreen(navController, phastPayClient)
+            HomeScreen(navController)
         }
         composable(
             route = NavDestination.StartPayment.route
         ) {
-            PaymentScreen(navController, phastPayClient)
+            PaymentScreen(navController)
         }
         composable(
             route = NavDestination.StartRefund.route
         ) {
-            StartRefundScreen(navController, phastPayClient)
+            StartRefundScreen(navController)
         }
         composable(
             route = NavDestination.GetPaymentMenu.route
@@ -57,17 +57,17 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         composable(
             route = NavDestination.GetPaymentById.route
         ) {
-            GetPaymentByIdScreen(navController, phastPayClient)
+            GetPaymentByIdScreen(navController)
         }
         composable(
             route = NavDestination.GetRefundById.route
         ) {
-            GetRefundByIdScreen(navController, phastPayClient)
+            GetRefundByIdScreen(navController)
         }
         composable(
             route = NavDestination.GetPaymentByAppClientId.route
         ) {
-            GetPaymentByAppClientIdScreen(navController, phastPayClient)
+            GetPaymentByAppClientIdScreen(navController)
         }
         composable(
             route = NavDestination.GetPaymentsFilter.route,
@@ -91,10 +91,11 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         ) { backStackEntry ->
             val args =
                 backStackEntry.arguments?.getString(RoutesConstants.ARGS_PARAMS)
+            requireNotNull(args)
             val params =
-                Gson().fromJson(args, RouteParams.GetPayments::class.java)
+                JsonUtils.json.decodeFromString<RouteParams.GetPayments>(args)
 
-            GetPaymentsScreen(navController, params, phastPayClient)
+            GetPaymentsScreen(navController, params)
 
         }
         composable(
@@ -105,10 +106,11 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         ) { backStackEntry ->
             val args =
                 backStackEntry.arguments?.getString(RoutesConstants.ARGS_PARAMS)
+            requireNotNull(args)
             val params =
-                Gson().fromJson(args, RouteParams.GetPaymentsToRefund::class.java)
+                JsonUtils.json.decodeFromString<RouteParams.GetPaymentsToRefund>(args)
 
-            GetPaymentsToRefundScreen(navController, params, phastPayClient)
+            GetPaymentsToRefundScreen(navController, params)
         }
         composable(
             route = NavDestination.GetReports.route,
@@ -118,16 +120,17 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         ) { backStackEntry ->
             val args =
                 backStackEntry.arguments?.getString(RoutesConstants.ARGS_PARAMS)
+            requireNotNull(args)
             val params =
-                Gson().fromJson(args, RouteParams.GetReports::class.java)
+                JsonUtils.json.decodeFromString<RouteParams.GetReports>(args)
 
             GetReportsScreen(navController, params, phastPayClient)
         }
         composable(route = NavDestination.SyncData.route) {
-            SyncDataScreen(navController, phastPayClient)
+            SyncDataScreen(navController)
         }
         composable(route = NavDestination.CheckInstalled.route) {
-            IsPhastPayInstalledScreen(navController, phastPayClient)
+            IsPhastPayInstalledScreen(navController)
         }
         composable(
             route = NavDestination.GetTransactionsFilter.route,
@@ -143,10 +146,11 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         ) { backStackEntry ->
             val args =
                 backStackEntry.arguments?.getString(RoutesConstants.ARGS_PARAMS)
+            requireNotNull(args)
             val params =
-                Gson().fromJson(args, RouteParams.GetTransactions::class.java)
+                JsonUtils.json.decodeFromString<RouteParams.GetTransactions>(args)
 
-            GetTransactionsScreen(navController, params, phastPayClient)
+            GetTransactionsScreen(navController, params)
         }
         composable(
             route = NavDestination.GetReportsFilter.route
@@ -157,7 +161,7 @@ fun DemoNavHost(navController: NavHostController, phastPayClient: PhastPayClient
         composable(
             route = NavDestination.GetAvailableServices.route
         ) {
-            GetAvailableServicesScreen(navController, phastPayClient)
+            GetAvailableServicesScreen(navController)
         }
 
     }

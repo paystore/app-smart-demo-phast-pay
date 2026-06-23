@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.phoebus.demo.phastpay.data.dto.PhastPayGetReportsRequest
 import com.phoebus.demo.phastpay.services.GetReportsService
+import com.phoebus.demo.phastpay.utils.JsonUtils
 import com.phoebus.phastpay.sdk.client.PhastPayClient
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -50,7 +51,7 @@ class GetReportsViewModel() : ViewModel() {
                 reportType = state.value.reportType,
                 service = state.value.serviceType,
             )
-            GetReportsService()(phastPayClient, request).collect { result ->
+            GetReportsService(JsonUtils.json)(phastPayClient, request).collect { result ->
                 result.onSuccess {
                     _effect.send(GetReportsEffect.Success)
                 }
