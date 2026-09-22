@@ -3,17 +3,20 @@ package com.phoebus.demo.phastpay.ui.features.startPaymentApi
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.phoebus.demo.phastpay.data.dto.PhastPayGetQrCodeRequest
 import com.phoebus.demo.phastpay.data.dto.PhastPayPrintReceiptRequest
 import com.phoebus.demo.phastpay.data.dto.PhastPayStartPaymentApiRequest
 import com.phoebus.demo.phastpay.data.enums.AdditionalType
 import com.phoebus.demo.phastpay.data.enums.Service
 import com.phoebus.demo.phastpay.data.repositories.DeviceRepository
+import com.phoebus.demo.phastpay.services.GetQrCodeService
 import com.phoebus.demo.phastpay.services.PrintReceiptService
 import com.phoebus.demo.phastpay.services.RegisterNotifyService
 import com.phoebus.demo.phastpay.services.StartPaymentApiService
 import com.phoebus.demo.phastpay.services.UnRegisterNotifyService
 import com.phoebus.demo.phastpay.ui.features.printReceipt.PrintReceiptSideEffect
 import com.phoebus.demo.phastpay.utils.ConstantsUtils
+import com.phoebus.demo.phastpay.utils.CurrencyType
 import com.phoebus.phastpay.sdk.client.PhastPayClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -25,8 +28,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -37,8 +38,8 @@ class PaymentApiViewModel @Inject constructor(
     private val registerNotifyService: RegisterNotifyService,
     private val unRegisterNotifyService: UnRegisterNotifyService,
     private val startPaymentApiService: StartPaymentApiService,
+    private val getQrCodeService: GetQrCodeService,
     private val printReceiptService: PrintReceiptService,
-    private val json: Json,
     private val deviceRepository: DeviceRepository,
 ) : ViewModel() {
 
@@ -79,7 +80,7 @@ class PaymentApiViewModel @Inject constructor(
 
                 result.isSuccess -> {
                     val response = result.getOrNull()
-                    onEvent(PaymentApiEvent.UpdateSuccessMessage(json.encodeToString(response)))
+                    onEvent(PaymentApiEvent.UpdateSuccessMessage(response))
                 }
 
                 result.isFailure -> {
@@ -89,6 +90,35 @@ class PaymentApiViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun fetchQrCode() {
+        var shouldRequestPayment = false
+        getQrCodeService.invoke(
+            phastPayClient,
+            PhastPayGetQrCodeRequest(
+                providerId = state.value.providerId ?: "",
+                service = Service.TWINT
+            )
+        ).collect { result ->
+            when {
+                result.isSuccess -> {
+                    val qrCodeResult = result.getOrNull()
+                    _state.update { it.copy(qrCodeResult = qrCodeResult) }
+                    shouldRequestPayment = true
+                }
+
+                result.isFailure -> {
+                    val exception = result.exceptionOrNull()
+                    if (exception !== null) {
+                        onEvent(PaymentApiEvent.UpdateErrorMessage(exception.message))
+                    }
+                }
+            }
+        }
+        if (shouldRequestPayment) {
+            requestPayment()
         }
     }
 
@@ -105,7 +135,12 @@ class PaymentApiViewModel @Inject constructor(
             }
 
             is PaymentApiEvent.UpdateService -> {
-                _state.update { it.copy(service = event.service) }
+                _state.update {
+                    it.copy(
+                        service = event.service,
+                        currency = if (event.service == Service.CRYPTO.name) CurrencyType.USD.name else it.currency
+                    )
+                }
             }
 
             is PaymentApiEvent.UpdateSendValue -> {
@@ -142,7 +177,11 @@ class PaymentApiViewModel @Inject constructor(
 
             is PaymentApiEvent.SubmitPaymentApi -> {
                 viewModelScope.launch {
-                    requestPayment()
+                    if (state.value.service == Service.TWINT.name) {
+                        fetchQrCode()
+                    }else {
+                        requestPayment()
+                    }
                 }
             }
 
@@ -153,9 +192,22 @@ class PaymentApiViewModel @Inject constructor(
             }
 
             is PaymentApiEvent.UpdateSuccessMessage -> {
-                Log.d(ConstantsUtils.TAG, event.message ?: "Msg error null")
-                _dialogMessage.value = event.message ?: "Unknown success"
-                _state.update { it.copy(shouldPrintOnDismiss = false) }
+                val response = event.response
+                Log.d(ConstantsUtils.TAG, response?.toString() ?: "Msg error null")
+                _dialogMessage.value = response?.let {
+                    """
+                        correlationId: ${it.correlationId}
+                        transactionId: ${it.transactionId}
+                        status: ${it.status}
+                        dateTimeOrder: ${it.dateTimeOrder}
+                    """.trimIndent()
+                } ?: "Unknown success"
+                _state.update {
+                    it.copy(
+                        shouldPrintOnDismiss = false,
+                        qrCodeResult = response?.qrcode ?: it.qrCodeResult
+                    )
+                }
             }
 
             is PaymentApiEvent.UpdatePrintCustomerReceipt -> {
@@ -178,6 +230,7 @@ class PaymentApiViewModel @Inject constructor(
 
     fun dismissDialog() {
         _dialogMessage.value = null
+        _state.update { it.copy(qrCodeResult = null) }
         if (_state.value.shouldPrintOnDismiss && _state.value.isPrintEnabled()) {
             printReceipt()
         }
@@ -248,7 +301,7 @@ class PaymentApiViewModel @Inject constructor(
                     super.onNotifyPaymentConfirmed(response)
                     Log.d(ConstantsUtils.TAG, "ViewModel recebeu confirmação: $response")
                     _dialogMessage.value = "Pagamento Confirmado com Sucesso!"
-                    _state.update { it.copy(shouldPrintOnDismiss = true) }
+                    _state.update { it.copy(shouldPrintOnDismiss = true, qrCodeResult = null) }
                 }
             }
         )

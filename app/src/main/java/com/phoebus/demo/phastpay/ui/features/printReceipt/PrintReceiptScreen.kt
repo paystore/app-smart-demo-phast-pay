@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.components.CheckboxPrint
+import com.phoebus.demo.phastpay.ui.components.CheckboxWithLabel
 import com.phoebus.demo.phastpay.ui.components.button.PhButton
 import com.phoebus.demo.phastpay.ui.components.popup.AppToast
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
@@ -116,12 +117,23 @@ fun PrintReceiptContent(
                 .padding(25.dp)
         ) {
 
+            CheckboxWithLabel(
+                checked = formState.lastTransaction,
+                onCheckedChange = {
+                    formEvent(PrintReceiptEvent.UpdateLastTransaction(it))
+                },
+                text = stringResource(R.string.print_last_transaction)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = formState.appClientId,
                 onValueChange = {
                     formEvent(PrintReceiptEvent.UpdateClientId(it))
                 },
                 label = { Text(stringResource(R.string.find_by_app_client_id)) },
+                enabled = !formState.lastTransaction,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -139,6 +151,7 @@ fun PrintReceiptContent(
                     formEvent(PrintReceiptEvent.UpdatePaymentId(it))
                 },
                 label = { Text(stringResource(R.string.find_by_payment_id)) },
+                enabled = !formState.lastTransaction,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -156,6 +169,7 @@ fun PrintReceiptContent(
                     formEvent(PrintReceiptEvent.UpdateRefundId(it))
                 },
                 label = { Text(stringResource(R.string.find_by_refund_id)) },
+                enabled = !formState.lastTransaction,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {

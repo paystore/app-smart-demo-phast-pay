@@ -18,5 +18,9 @@ data class PhastPayGetPaymentByIdResponse(
     @SerialName("iva")
     val iva: String? = null,
     @SerialName("date_time")
-    val dateTime: String? = null
+    val dateTime: String? = null,
+    @SerialName("original_amount_value")
+    val originalAmountValue: String? = null,
+    @SerialName("provider_data")
+    val providerData: PhastPayProviderData? = null,
 )

@@ -15,11 +15,14 @@ data class PhastPayGetTransactionsResponse (
     val status: String? = null,
     @SerialName("payment_id")
     val paymentId: String? = null,
-    @SerialName("refund_id")
+    @SerialName("transaction_id")
     val transactionId: String? = null,
     @SerialName("value")
     val value: String? = null,
     @SerialName("additional_value")
     val additionalValue: String? = null,
-
+    @SerialName("original_amount_value")
+    val originalAmountValue: String? = null,
+    @SerialName("provider_data")
+    val providerData: PhastPayProviderData? = null,
 )

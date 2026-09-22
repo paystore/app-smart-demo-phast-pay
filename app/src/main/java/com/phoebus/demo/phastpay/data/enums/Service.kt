@@ -4,9 +4,11 @@ import com.phoebus.demo.phastpay.R
 import androidx.annotation.StringRes
 
 enum class Service {
-    BIZUM,
+    CRYPTO,
+    MBWAY,
+    PIX,
     TWINT,
-    MBWAY;
+    BIZUM;
 }
 
 @StringRes
@@ -14,4 +16,6 @@ fun Service.getStringRes(): Int = when (this) {
     Service.BIZUM -> R.string.bizum_acquirer
     Service.TWINT -> R.string.twint_acquirer
     Service.MBWAY -> R.string.mbway_acquirer
+    Service.CRYPTO -> R.string.crypto_acquirer
+    Service.PIX -> R.string.pix_acquirer
 }

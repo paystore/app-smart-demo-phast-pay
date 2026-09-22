@@ -78,6 +78,10 @@ class PrintReceiptViewModel @Inject constructor(
             is PrintReceiptEvent.UpdatePaymentId -> {
                 _state.update { it.copy(paymentId = event.paymentId) }
             }
+
+            is PrintReceiptEvent.UpdateLastTransaction -> {
+                _state.update { it.copy(lastTransaction = event.lastTransaction) }
+            }
         }
     }
 
@@ -104,7 +108,8 @@ class PrintReceiptViewModel @Inject constructor(
                     printCustomerReceipt = state.value.printCustomerReceipt,
                     printMerchantReceipt = state.value.printMerchantReceipt,
                     previewCustomerReceipt = state.value.previewCustomerReceipt,
-                    previewMerchantReceipt = state.value.previewMerchantReceipt
+                    previewMerchantReceipt = state.value.previewMerchantReceipt,
+                    lastTransaction = state.value.lastTransaction
                 )
             ).collect { result ->
                 when {

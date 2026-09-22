@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
+import com.phoebus.demo.phastpay.data.enums.Service
 import com.phoebus.demo.phastpay.ui.components.ServiceSelector
 import com.phoebus.demo.phastpay.ui.components.button.PhButton
 import com.phoebus.demo.phastpay.ui.components.popup.AppToast
@@ -106,6 +107,7 @@ fun QrCodeContent(
         ) {
             ServiceSelector(
                 service = formState.service,
+                allowedServices = listOf(Service.TWINT),
                 onPhastTypeSelected = { formEvent(GetQrCodeEvent.UpdateService(it)) },
             )
         }

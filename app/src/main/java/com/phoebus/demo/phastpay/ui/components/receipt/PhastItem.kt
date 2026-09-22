@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.phoebus.demo.phastpay.R
+import com.phoebus.demo.phastpay.data.dto.PhastPayProviderData
+import com.phoebus.demo.phastpay.data.dto.PhastPayRefundProviderData
 import com.phoebus.demo.phastpay.data.enums.ServiceType
 import com.phoebus.demo.phastpay.data.enums.TransactionStatus
 import com.phoebus.demo.phastpay.data.enums.getResId
@@ -38,7 +40,8 @@ data class RefundsItem(
     val valor: String? = "",
     val status: String? = "",
     val dateTime: String? = "",
-    val iva: String? = ""
+    val iva: String? = "",
+    val providerData: PhastPayRefundProviderData? = null
 )
 
 @Composable
@@ -52,70 +55,103 @@ fun PhastItem(
     service: String? = "",
     appClientId: String? = null,
     currency: String? = null,
-    refunds: List<RefundsItem>? = null
+    refunds: List<RefundsItem>? = null,
+    providerData: PhastPayProviderData? = null
 ) {
+    val serviceName = ServiceType.fromString(service ?: "")
+
     Surface(
-        modifier = Modifier
-            .padding(5.dp),
+        modifier = Modifier.padding(5.dp),
         color = YellowLight
     ) {
-        val dateTime = DateUtils.formatDateStrUTCToStrLocal(dateTime ?: "")
-        val transactionStatus = stringResource(TransactionStatus.fromString(status ?: "").getResId())
-        val paymentValue = formatAmount(
-            value,
-            currency
-        )
-        val additionalValueFormatted = additionalValue?.let {
-            formatAmount(
-                additionalValue,
-                currency
-            )
-        }
-        val ivaFormatted = iva?.let {
-            formatAmount(
-                iva,
-                currency
-            )
-        }
-        val serviceName = ServiceType.fromString(
-            service ?: ""
-        )
         Column(
-            modifier =
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp)
         ) {
-            TextItem(
-                text = "${stringResource(R.string.filter_status_title)}: $transactionStatus"
+            PaymentSummary(
+                status = status,
+                value = value,
+                additionalValue = additionalValue,
+                iva = iva,
+                currency = currency,
+                serviceName = serviceName,
+                paymentId = paymentId,
+                appClientId = appClientId,
+                dateTime = dateTime
             )
-            TextItem(
-                text = "${stringResource(R.string.filter_value_title)}: $paymentValue"
-            )
-            additionalValueFormatted?.let {
-                TextItem(
-                    text = "${stringResource(R.string.filter_additional_value_title)}: $it"
-                )
-            }
-            ivaFormatted?.let {
-                TextItem(text = "${stringResource(R.string.iva_label)}: $it")
+
+            if (providerData != null) {
+                when (serviceName) {
+                    ServiceType.CRYPTO -> CryptoProviderInfo(providerData, currency)
+                    ServiceType.PIX -> PixAmountInfo(providerData.amountBrl, providerData.rate)
+                    else -> Unit
+                }
             }
 
-            TextItem(
-                text = "${stringResource(R.string.filter_service_title)}: $serviceName"
-            )
-            paymentId?.let {
-                TextWithCopyIcon("paymentId", it)
-            }
-            appClientId?.let {
-                TextWithCopyIcon("appClientId", it)
-            }
-            TextItem(text = "${stringResource(R.string.date_label)}:  $dateTime")
             if (!refunds.isNullOrEmpty()) {
                 TextItem(text = "${stringResource(R.string.refunds_label)}: ")
-                PrintRefunds(refunds, currency)
+                PrintRefunds(refunds, serviceName, currency)
             }
         }
+    }
+}
+
+@Composable
+private fun PaymentSummary(
+    status: String?,
+    value: String?,
+    additionalValue: String?,
+    iva: String?,
+    currency: String?,
+    serviceName: ServiceType,
+    paymentId: String?,
+    appClientId: String?,
+    dateTime: String?
+) {
+    val transactionStatus = stringResource(TransactionStatus.fromString(status ?: "").getResId())
+    val dateTimeValue = DateUtils.formatDateStrUTCToStrLocal(dateTime ?: "")
+
+    TextItem(text = "${stringResource(R.string.filter_status_title)}: $transactionStatus")
+    TextItem(text = "${stringResource(R.string.filter_value_title)}: ${formatAmount(value, currency)}")
+    additionalValue?.let {
+        TextItem(text = "${stringResource(R.string.filter_additional_value_title)}: ${formatAmount(it, currency)}")
+    }
+    iva?.let {
+        TextItem(text = "${stringResource(R.string.iva_label)}: ${formatAmount(it, currency)}")
+    }
+    TextItem(text = "${stringResource(R.string.filter_service_title)}: $serviceName")
+    paymentId?.let { TextWithCopyIcon(stringResource(R.string.label_payment_id), it) }
+    appClientId?.let { TextWithCopyIcon(stringResource(R.string.label_app_client_id), it) }
+    TextItem(text = "${stringResource(R.string.date_label)}:  $dateTimeValue")
+}
+
+@Composable
+private fun CryptoProviderInfo(providerData: PhastPayProviderData, currency: String?) {
+    providerData.leftToPayAmountValue?.let {
+        TextItem(text = stringResource(R.string.crypto_left_to_pay, formatAmount(it, currency)))
+    }
+    providerData.cryptoAmount?.let {
+        TextItem(text = stringResource(R.string.crypto_amount, it, providerData.cryptoCurrencyCode ?: ""))
+    }
+    providerData.network?.let {
+        TextItem(text = stringResource(R.string.crypto_network, it))
+    }
+    providerData.processingFeeFiatAmount?.let {
+        TextItem(text = stringResource(R.string.crypto_processing_fee, formatAmount(it, currency)))
+    }
+    providerData.transactionHash?.let {
+        TextWithCopyIcon(stringResource(R.string.label_transaction_hash), it)
+    }
+}
+
+@Composable
+private fun PixAmountInfo(amountBrl: String?, rate: String?) {
+    amountBrl?.takeIf { it.isNotBlank() }?.let {
+        TextItem(text = stringResource(R.string.pix_amount_brl, formatAmount(it, "BRL")))
+    }
+    rate?.takeIf { it.isNotBlank() }?.let {
+        TextItem(text = stringResource(R.string.pix_rate, formatAmount(it, "BRL")))
     }
 }
 
@@ -128,50 +164,44 @@ private fun TextItem(text: String) {
 }
 
 @Composable
-private fun PrintRefunds(refunds: List<RefundsItem>?, currency: String?) {
-    if (!refunds.isNullOrEmpty()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            refunds.forEach { refund ->
-                    val dateTime = DateUtils.formatDateStrUTCToStrLocal(refund.dateTime ?: "")
-                    val refundValue = formatAmount(
-                        refund.valor,
-                        currency
-                    )
-                    val refundStatus = stringResource(TransactionStatus.fromString(refund.status ?: "").getResId())
-                    HorizontalDivider()
-                    refund.refundId?.let {
-                        TextWithCopyIcon("refundId", it)
-                    }
-                    TextItem(
-                        text = "${stringResource(R.string.filter_value_title)}: $refundValue",
-                    )
-                    TextItem(
-                        text = "${stringResource(R.string.filter_status_title)}: $refundStatus",
-                    )
-                    TextItem(
-                        text = "${stringResource(R.string.iva_label)}: ${formatValue(refund.iva)}",
-                    )
-                    TextItem(
-                        text = "${stringResource(R.string.date_label)}:  $dateTime",
-                    )
-            }
+private fun PrintRefunds(refunds: List<RefundsItem>?, serviceType: ServiceType, currency: String?) {
+    if (refunds.isNullOrEmpty()) return
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        refunds.forEach { refund ->
+            RefundDetails(refund, serviceType, currency)
+        }
+    }
+}
+
+@Composable
+private fun RefundDetails(refund: RefundsItem, serviceType: ServiceType, currency: String?) {
+    val dateTime = DateUtils.formatDateStrUTCToStrLocal(refund.dateTime ?: "")
+    val refundStatus = stringResource(TransactionStatus.fromString(refund.status ?: "").getResId())
+
+    HorizontalDivider()
+    refund.refundId?.let { TextWithCopyIcon(stringResource(R.string.label_refund_id), it) }
+    TextItem(text = "${stringResource(R.string.filter_value_title)}: ${formatAmount(refund.valor, currency)}")
+    TextItem(text = "${stringResource(R.string.filter_status_title)}: $refundStatus")
+    TextItem(text = "${stringResource(R.string.iva_label)}: ${formatValue(refund.iva)}")
+    TextItem(text = "${stringResource(R.string.date_label)}:  $dateTime")
+
+    if (serviceType == ServiceType.PIX) {
+        refund.providerData?.let {
+            PixAmountInfo(it.amountRefundedBrl, it.rateRefunded)
         }
     }
 }
 
 fun formatAmount(value: String?, currency: String?): String {
-    val currencyItem = getCurrencyFormat(
-        CurrencyType.fromString(
-            currency ?: ""
-        )
-    )
-    val fValue = formatValue(value);
-    return if (currencyItem.isPrefix) "${currencyItem.symbol} $fValue";
-    else "$fValue ${currencyItem.symbol}"
+    val currencyItem = getCurrencyFormat(CurrencyType.fromString(currency ?: ""))
+    val fValue = formatValue(value)
+    return if (currencyItem.isPrefix) "${currencyItem.symbol} $fValue" else "$fValue ${currencyItem.symbol}"
 }
 
 fun formatValue(value: String?): String? {
@@ -186,12 +216,13 @@ fun TextWithCopyIcon(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val copiedText = stringResource(R.string.copied_text);
+    val copiedText = stringResource(R.string.copied_text)
+    val copyIconDescription = stringResource(R.string.copy_icon_description)
 
     Row(
         modifier = modifier.clickable {
             clipboardManager.setText(AnnotatedString(text))
-            Toast.makeText(context, String.format(copiedText, type ), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, String.format(copiedText, type), Toast.LENGTH_SHORT).show()
         },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -199,7 +230,7 @@ fun TextWithCopyIcon(
         TextItem(text = "$type: $text")
         Icon(
             imageVector = Icons.Default.ContentCopy,
-            contentDescription = "Copy",
+            contentDescription = copyIconDescription,
             tint = Color.Gray,
             modifier = Modifier
                 .padding(start = 4.dp)
@@ -207,4 +238,3 @@ fun TextWithCopyIcon(
         )
     }
 }
-

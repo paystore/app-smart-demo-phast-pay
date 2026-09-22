@@ -12,6 +12,7 @@ data class PaymentState(
     val sendValue: Boolean = false,
     val value: String? = null,
     val currency: String = "EUR",
+    val sendCurrency: Boolean = true,
     val printCustomerReceipt: Boolean = true,
     val printMerchantReceipt: Boolean = true,
     val previewCustomerReceipt: Boolean = true,
@@ -24,6 +25,8 @@ data class PaymentState(
     val switchAdditionalInfo: Boolean = false,
     val customerName: String? = null,
     val customerEmail: String? = null,
+    val switchSendProviderId: Boolean = false,
+    val providerId: String? = null,
 
     val isLoading: Boolean = false,
     val errorMessage: String? = null,

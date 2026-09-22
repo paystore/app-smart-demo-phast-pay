@@ -5,6 +5,8 @@
     <string name="start_payment">Start Payment</string>
     <string name="start_payment_api">Start API Payment</string>
     <string name="abort_payment">Abort Payment</string>
+    <string name="start_payment_abort">Payment + Abort</string>
+    <string name="start_payment_abort_info">The abort will be executed 30 seconds after the payment starts.</string>
     <string name="start_refund">Start Refund</string>
     <string name="get_payment">Get Payment</string>
     <string name="start_payment_menu">Start Payment</string>
@@ -33,6 +35,7 @@
     <string name="provider_id">ProviderId</string>
     <string name="find_by_refund_id">RefundId</string>
     <string name="find_by_app_client_id">ClientId</string>
+    <string name="print_last_transaction">Print last transaction</string>
     <string name="back_button">Back</string>
     <string name="check_button">Fetch</string>
     <string name="get_qrcode">Get QR CODE</string>
@@ -41,6 +44,7 @@
     <string name="value">Amount</string>
     <string name="client_id">Client ID</string>
     <string name="send_value">Send amount</string>
+    <string name="send_currency">Send currency</string>
     <string name="send_provider_id">Send Provider Id</string>
     <string name="send_partial_value">Partial refund</string>
     <string name="select_service">Select service:</string>
@@ -67,6 +71,8 @@
     <string name="all_acquirers">All</string>
     <string name="bizum_acquirer">Bizum</string>
     <string name="mbway_acquirer">MBWay</string>
+    <string name="crypto_acquirer">Crypto</string>
+    <string name="pix_acquirer">Pix</string>
     <string name="twint_acquirer">Twint</string>
     <string name="provider_info_display_mode">Display mode</string>
     <string name="provider_info_cob_expiration">Expiração da cobrança</string>
@@ -138,4 +144,15 @@
     <string name="send_additional_value">Send Additional Amount</string>
     <string name="report_with_filter">Report with filter</string>
     <string name="report_without_filter">Report without filter</string>
+    <string name="pix_rate">EXCHANGE RATE: %s</string>
+    <string name="pix_amount_brl">BRL AMOUNT: %s</string>
+    <string name="crypto_left_to_pay">Left to pay: %s</string>
+    <string name="crypto_amount">Crypto amount: %1$s %2$s</string>
+    <string name="crypto_network">Network: %s</string>
+    <string name="crypto_processing_fee">Processing fee: %s</string>
+    <string name="label_transaction_hash">Transaction Hash</string>
+    <string name="label_payment_id">paymentId</string>
+    <string name="label_app_client_id">appClientId</string>
+    <string name="label_refund_id">refundId</string>
+    <string name="copy_icon_description">Copy</string>
 </resources>

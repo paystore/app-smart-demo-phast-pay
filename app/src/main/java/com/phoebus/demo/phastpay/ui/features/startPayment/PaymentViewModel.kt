@@ -3,14 +3,18 @@ package com.phoebus.demo.phastpay.ui.features.startPayment
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.phoebus.demo.phastpay.data.dto.PhastPayAbortTransactionRequest
 import com.phoebus.demo.phastpay.data.dto.PhastPayStartPaymentRequest
 import com.phoebus.demo.phastpay.data.enums.AdditionalType
 import com.phoebus.demo.phastpay.data.enums.Service
 import com.phoebus.demo.phastpay.data.repositories.DeviceRepository
+import com.phoebus.demo.phastpay.services.AbortTransactionService
 import com.phoebus.demo.phastpay.services.StartPaymentService
 import com.phoebus.demo.phastpay.utils.ConstantsUtils
+import com.phoebus.demo.phastpay.utils.CurrencyType
 import com.phoebus.phastpay.sdk.client.PhastPayClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,6 +33,7 @@ import javax.inject.Inject
 class PaymentViewModel @Inject constructor(
     private val phastPayClient: PhastPayClient,
     private val startPaymentService: StartPaymentService,
+    private val abortTransactionService: AbortTransactionService,
     private val json: Json,
     private val deviceRepository: DeviceRepository
 ) : ViewModel() {
@@ -62,7 +67,7 @@ class PaymentViewModel @Inject constructor(
                 applicationName = state.value.applicationName,
                 service = Service.valueOf(state.value.service),
                 value = if (state.value.sendValue) valueToSend(state.value.value) else null,
-                currency = if (state.value.sendValue || state.value.sendTipValue) state.value.currency else null,
+                currency = if (state.value.sendCurrency) state.value.currency else null,
                 printCustomerReceipt = state.value.printCustomerReceipt,
                 printMerchantReceipt = state.value.printMerchantReceipt,
                 previewCustomerReceipt = state.value.previewCustomerReceipt,
@@ -72,7 +77,8 @@ class PaymentViewModel @Inject constructor(
                 additionalValue = valueToSend(state.value.additionalValue),
                 additionalType = if(state.value.sendTipValue) AdditionalType.TIP else null,
                 customerName = if (state.value.switchAdditionalInfo) state.value.customerName else null,
-                customerEmail = if (state.value.switchAdditionalInfo) state.value.customerEmail else null
+                customerEmail = if (state.value.switchAdditionalInfo) state.value.customerEmail else null,
+                providerId = if(state.value.switchSendProviderId) state.value.providerId else null
             )
         ).collect { result ->
             when {
@@ -91,6 +97,23 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
+    private suspend fun abortTransaction() {
+        abortTransactionService.invoke(
+            phastPayClient,
+            PhastPayAbortTransactionRequest(
+                applicationId = state.value.applicationId,
+                applicationName = state.value.applicationName,
+            )
+        ).collect { result ->
+            result.onSuccess {
+                Log.d(ConstantsUtils.TAG, "Abort transaction enviado com sucesso: $it")
+            }
+            result.onFailure {
+                Log.e(ConstantsUtils.TAG, "Falha ao enviar abort transaction: ${it.message}")
+            }
+        }
+    }
+
     fun onEvent(event: PaymentEvent) {
         when (event) {
             is PaymentEvent.Initialize -> {
@@ -104,11 +127,21 @@ class PaymentViewModel @Inject constructor(
             }
 
             is PaymentEvent.UpdateService -> {
-                _state.update { it.copy(service = event.service) }
+                _state.update {
+                    it.copy(
+                        service = event.service,
+                        currency = if (event.service == Service.CRYPTO.name) CurrencyType.USD.name else it.currency
+                    )
+                }
             }
 
             is PaymentEvent.UpdateSendValue -> {
-                _state.update { it.copy(sendValue = event.sendValue) }
+                _state.update {
+                    it.copy(
+                        sendValue = event.sendValue,
+                        sendCurrency = if (event.sendValue) true else it.sendCurrency
+                    )
+                }
             }
 
             is PaymentEvent.UpdateValue -> {
@@ -117,6 +150,10 @@ class PaymentViewModel @Inject constructor(
 
             is PaymentEvent.UpdateCurrency -> {
                 _state.update { it.copy(currency = event.currency) }
+            }
+
+            is PaymentEvent.UpdateSendCurrency -> {
+                _state.update { it.copy(sendCurrency = event.sendCurrency) }
             }
 
             is PaymentEvent.UpdatePrintCustomerReceipt -> {
@@ -148,7 +185,12 @@ class PaymentViewModel @Inject constructor(
             }
 
             is PaymentEvent.UpdateSendTipValue -> {
-                _state.update { it.copy(sendTipValue = event.sendTip) }
+                _state.update {
+                    it.copy(
+                        sendTipValue = event.sendTip,
+                        sendCurrency = if (event.sendTip) true else it.sendCurrency
+                    )
+                }
             }
 
             is PaymentEvent.UpdateTipValue -> {
@@ -167,9 +209,27 @@ class PaymentViewModel @Inject constructor(
                 _state.update { it.copy(customerEmail = event.email) }
             }
 
+            is PaymentEvent.UpdateProviderId -> {
+                _state.update { it.copy(providerId = event.providerId) }
+            }
+
+            is PaymentEvent.UpdateSendProviderId -> {
+                _state.update { it.copy(switchSendProviderId = event.sendProviderId) }
+            }
+
             is PaymentEvent.SubmitPayment -> {
                 viewModelScope.launch {
                     requestPayment()
+                }
+            }
+
+            is PaymentEvent.SubmitPaymentWithAbort -> {
+                viewModelScope.launch {
+                    requestPayment()
+                }
+                viewModelScope.launch {
+                    delay(30_000)
+                    abortTransaction()
                 }
             }
 

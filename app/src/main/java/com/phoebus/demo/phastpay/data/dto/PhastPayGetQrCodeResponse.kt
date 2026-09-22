@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PhastPayGetQrCodeResponse(
-    val base64: String,
-    val imageFormat: ImageFormat
+    val base64: String?,
+    val imageFormat: ImageFormat?,
+    val rawQrCode: String?
 )

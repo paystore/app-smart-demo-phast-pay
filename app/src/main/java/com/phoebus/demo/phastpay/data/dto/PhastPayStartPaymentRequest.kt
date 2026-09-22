@@ -53,6 +53,9 @@ class PhastPayStartPaymentRequest(
     val customerName: String? = null,
 
     @SerialName("customer_email")
-    val customerEmail: String? = null
+    val customerEmail: String? = null,
+
+    @SerialName("provider_id")
+    var providerId: String? = ""
 ) {
 }

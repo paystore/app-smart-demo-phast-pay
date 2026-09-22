@@ -10,6 +10,7 @@ sealed interface PrintReceiptEvent {
     data class UpdateRefundId(val refundId : String ) : PrintReceiptEvent
     data class UpdatePaymentId(val paymentId : String ) : PrintReceiptEvent
     data class UpdateClientId(val clientId : String ) : PrintReceiptEvent
+    data class UpdateLastTransaction(val lastTransaction : Boolean ) : PrintReceiptEvent
 }
 
 sealed interface PrintReceiptNavigationEvents {

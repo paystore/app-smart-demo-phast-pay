@@ -5,6 +5,8 @@
     <string name="start_payment">Iniciar Pagamento</string>
     <string name="start_payment_api">Iniciar Pagamento via API</string>
     <string name="abort_payment">Abortar Pagamento</string>
+    <string name="start_payment_abort">Pagamento + Abort</string>
+    <string name="start_payment_abort_info">O abort será executado 30 segundos após o início do pagamento.</string>
     <string name="start_refund">Iniciar Devolução</string>
     <string name="get_payment">Consultar Pagamento</string>
     <string name="start_payment_menu">Iniciar Pagamento</string>
@@ -33,6 +35,7 @@
     <string name="provider_id">ProviderId</string>
     <string name="find_by_refund_id">RefundId</string>
     <string name="find_by_app_client_id">ClientId</string>
+    <string name="print_last_transaction">Imprimir última transação</string>
     <string name="back_button">Voltar</string>
     <string name="check_button">Consultar</string>
     <string name="get_qrcode">Obter QRCODE</string>
@@ -41,6 +44,7 @@
     <string name="value">Valor</string>
     <string name="client_id">Client ID</string>
     <string name="send_value">Enviar valor</string>
+    <string name="send_currency">Enviar moeda</string>
     <string name="send_provider_id">Enviar Provider Id</string>
     <string name="send_partial_value">Devolução parcial</string>
     <string name="select_service">Selecione o serviço:</string>
@@ -68,6 +72,7 @@
     <string name="bizum_acquirer">Bizum</string>
     <string name="mbway_acquirer">MBWay</string>
     <string name="twint_acquirer">Twint</string>
+    <string name="crypto_acquirer">Crypto</string>
     <string name="provider_info_display_mode">Modo de display</string>
     <string name="provider_info_cob_expiration">Expiração da cobrança</string>
     <string name="provider_info_service_name">Nome do serviço</string>
@@ -138,4 +143,15 @@
     <string name="send_additional_value">Enviar Valor Adicional</string>
     <string name="report_with_filter">Relatório com filtro</string>
     <string name="report_without_filter">Relatório sem filtro</string>
+    <string name="pix_rate">TAXA DE CÂMBIO: %s</string>
+    <string name="pix_amount_brl">VALOR EM REAIS: %s</string>
+    <string name="crypto_left_to_pay">Restante a pagar: %s</string>
+    <string name="crypto_amount">Valor em cripto: %1$s %2$s</string>
+    <string name="crypto_network">Rede: %s</string>
+    <string name="crypto_processing_fee">Taxa de processamento: %s</string>
+    <string name="label_transaction_hash">Transaction Hash</string>
+    <string name="label_payment_id">paymentId</string>
+    <string name="label_app_client_id">appClientId</string>
+    <string name="label_refund_id">refundId</string>
+    <string name="copy_icon_description">Copiar</string>
 </resources>

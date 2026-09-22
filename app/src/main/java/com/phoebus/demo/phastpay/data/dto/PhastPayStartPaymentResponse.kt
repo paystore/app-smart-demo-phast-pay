@@ -18,5 +18,10 @@ class PhastPayStartPaymentResponse(
     @SerialName("value")
     val value: String? = null,
     @SerialName("additional_value")
-    val additionalValue: String? = null
+    val additionalValue: String? = null,
+    @SerialName("original_amount_value")
+    val originalAmountValue: String? = null,
+    @SerialName("provider_data")
+    val providerData: PhastPayProviderData? = null,
+
 )

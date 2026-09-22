@@ -9,9 +9,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.phoebus.demo.phastpay.R
 import com.phoebus.demo.phastpay.ui.theme.AppSmartDemoPhastPayTheme
 import com.phoebus.demo.phastpay.data.enums.Service
+import com.phoebus.demo.phastpay.data.enums.getStringRes
+
+@Composable
+fun <T> ServiceSelector(
+    items: List<T>,
+    selectedItem: T,
+    labelFor: @Composable (T) -> String,
+    onItemSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    testTagPrefix: String = "filter_service"
+) {
+    val filterItems = items.map { item ->
+        FilterItem(label = labelFor(item), value = item as Any)
+    }
+    val onSelectedFilterItem: (FilterItem) -> Unit = { item ->
+        @Suppress("UNCHECKED_CAST")
+        onItemSelected(item.value as T)
+    }
+    val selectedFilterItem = filterItems.find { it.value == selectedItem }
+
+    FilterBox(
+        filterItems,
+        onSelectedItem = onSelectedFilterItem,
+        selectedItem = selectedFilterItem,
+        modifier = modifier.testTag("${testTagPrefix}_${selectedItem.toString().lowercase()}")
+    )
+}
 
 @Composable
 fun ServiceSelector(
@@ -20,44 +46,12 @@ fun ServiceSelector(
     modifier: Modifier = Modifier,
     allowedServices: List<Service>? = null
 ) {
-
-    val allItems = buildList {
-        add(
-            FilterItem(
-                label = stringResource(R.string.mbway_acquirer),
-                value = Service.MBWAY
-            )
-        )
-        add(
-            FilterItem(
-                label = stringResource(R.string.bizum_acquirer),
-                value = Service.BIZUM
-            )
-        )
-        add(
-            FilterItem(
-                label = stringResource(R.string.twint_acquirer),
-                value = Service.TWINT
-            )
-        )
-    }
-
-    val items = if (allowedServices != null) {
-        allItems.filter { allowedServices.contains(it.value) }
-    } else {
-        allItems
-    }
-
-    val onSelectedItem: (FilterItem) -> Unit = { item ->
-        onPhastTypeSelected(item.value as Service)
-    }
-
-    val selectedItem = items.find { it.value == service }
-    FilterBox(
-        items,
-        onSelectedItem = onSelectedItem,
-        selectedItem = selectedItem,
-        modifier = modifier.testTag("filter_service_${service.name.lowercase()}")
+    ServiceSelector(
+        items = allowedServices ?: Service.entries,
+        selectedItem = service,
+        labelFor = { stringResource(it.getStringRes()) },
+        onItemSelected = onPhastTypeSelected,
+        modifier = modifier
     )
 }
 

@@ -1,5 +1,42 @@
 # Release Notes
 
+## v1.0.2.0
+
+#### refs: 173267
+- incremento de versão
+- comitando documentações
+- Trocado texto informativo do abort por card com icone
+- Ocultado botao Payment + Abort para o servico MBWAY e adicionada informacao sobre o abort apos 30 segundos
+- Adicionado funcao para abortar um pagamento quando a tela de qrcode estiver aberta. - Atualizada versao do SDK
+
+#### refs: 172786
+- atualizado response do StartPaymentAPI - atualizado DTO QrCodeResponse
+
+#### refs: 171664
+- Diminuido o nivel de complexidade da função.
+- Ajustado a listagem dos dados do pix
+- Ajustando app demo para a feature do pix internacional
+
+#### refs: sem_referencia
+- refs  #172080 - Adicionada feature de impressao da ultima transação.
+
+#### refs: 171376
+- Permitindo o envio do currency quando nenhum valor for enviado para a aplicação.
+
+#### refs: 171358
+- Ajustado response de erro para retornar o codigo e a mensagem.
+
+#### refs: 170945
+- adicionado dados do pagamento cripto na listagem dos pagamentos
+- Revert ""
+- Removendo checkbox de impressão visto que não é necessário no pagamento via api
+- Adicionado suporte ao serviço crypto nas requisicoes do PaymentApiService
+- Adicionado serviço da crypto ao service - Configurado selector para obter os nomes dos serviços automaticamente - Ajustado dialog para inserir o qrcode - Adicionado qrcode a requisicao de resposta da criacao do pagamento
+- Preparando o app demo para receber os novos dados da crypto
+
+#### refs: 171210
+- Adicionada opção do envio do providerId
+
 ## v1.0.1.0
 
 #### refs: 165988
@@ -107,4 +144,3 @@
 
 #### refs: 164216
 - Atualizando o app demo para exibir uma notificação quando o evento ping for recebido
-

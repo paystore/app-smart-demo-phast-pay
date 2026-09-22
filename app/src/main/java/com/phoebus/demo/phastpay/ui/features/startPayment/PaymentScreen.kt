@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -150,7 +156,15 @@ fun PaymentContent(
 
             ServicePaymentSelector(formState = state, formEvent = onEvent)
 
-            if(state.sendValue || state.sendTipValue){
+            GenericSelector(
+                label = stringResource(R.string.send_currency),
+                checked = state.sendValue || state.sendTipValue || state.sendCurrency,
+                enabled = !state.sendValue && !state.sendTipValue,
+                onCheckedChange = { onEvent(PaymentEvent.UpdateSendCurrency(it)) },
+                testTag = "tgl_switch_send_currency"
+            )
+
+            if (state.sendValue || state.sendTipValue || state.sendCurrency) {
                 InputCurrency(
                     currencyType = CurrencyType.valueOf(state.currency),
                     onCurrencyChange = { onEvent(PaymentEvent.UpdateCurrency(it.name)) }
@@ -176,11 +190,11 @@ fun PaymentContent(
                 )
             }
 
-            if (state.service != Service.TWINT.name) {
+            if (state.service in listOf(Service.MBWAY.name, Service.BIZUM.name)) {
                 GenericSelector(
                     label = stringResource(R.string.send_phone_number),
                     checked = state.sendPhoneNumber,
-                    onCheckedChange = {onEvent(PaymentEvent.UpdateSendPhoneNumber(it))},
+                    onCheckedChange = { onEvent(PaymentEvent.UpdateSendPhoneNumber(it)) },
                     testTag = "tgl_switch_send_phone_number"
                 )
 
@@ -194,7 +208,6 @@ fun PaymentContent(
                     )
                 }
             }
-
             GenericSelector(
                 label = stringResource(R.string.send_additional_value),
                 checked = state.sendTipValue,
@@ -211,12 +224,31 @@ fun PaymentContent(
                 )
             }
 
+
             GenericSelector(
-                label = stringResource(R.string.add_info),
-                checked = state.switchAdditionalInfo,
-                onCheckedChange = { onEvent(PaymentEvent.SendAdditionalInfo(send = it)) },
-                testTag = "tgl_switch_add_info"
+                label = stringResource(R.string.send_provider_id),
+                checked = state.switchSendProviderId,
+                onCheckedChange = { onEvent(PaymentEvent.UpdateSendProviderId(sendProviderId = it)) },
+                testTag = "tgl_switch_send_providerId_info"
             )
+            if (state.switchSendProviderId) {
+                OutlinedTextField(
+                    value = state.providerId ?: "",
+                    onValueChange = { onEvent(PaymentEvent.UpdateProviderId(it)) },
+                    label = { Text(stringResource(R.string.provider_id)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+
+            if (state.service in listOf(Service.MBWAY.name, Service.BIZUM.name)) {
+                GenericSelector(
+                    label = stringResource(R.string.add_info),
+                    checked = state.switchAdditionalInfo,
+                    onCheckedChange = { onEvent(PaymentEvent.SendAdditionalInfo(send = it)) },
+                    testTag = "tgl_switch_add_info"
+                )
+            }
 
             if (state.switchAdditionalInfo) {
                 OutlinedTextField(
@@ -288,22 +320,63 @@ fun PaymentContent(
             ) {
                 onEvent(PaymentEvent.SubmitPayment)
             }
+
+            if (state.service != Service.MBWAY.name) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                PhButton(
+                    title = stringResource(R.string.start_payment_abort),
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .align(Alignment.CenterHorizontally),
+                    enabled = true
+                ) {
+                    onEvent(PaymentEvent.SubmitPaymentWithAbort)
+                }
+
+                Card(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth(0.9f)
+                        .align(Alignment.CenterHorizontally),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.start_payment_abort_info),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun ServicePaymentSelector(modifier: Modifier = Modifier, formState: PaymentState, formEvent : (PaymentEvent) -> Unit){
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        ServiceSelector(
-            service = Service.valueOf(formState.service),
-            onPhastTypeSelected = { formEvent(PaymentEvent.UpdateService(it.name)) },
-        )
-    }
+fun ServicePaymentSelector(
+    modifier: Modifier = Modifier,
+    formState: PaymentState,
+    formEvent: (PaymentEvent) -> Unit
+) {
+    ServiceSelector(
+        service = Service.valueOf(formState.service),
+        onPhastTypeSelected = { formEvent(PaymentEvent.UpdateService(it.name)) },
+        modifier = modifier.fillMaxWidth()
+    )
 }
 
 fun validateInput(value: String): Boolean {

@@ -20,3 +20,6 @@ app/debug/
 github.properties
 app/newland/
 app/build/
+_bmad/
+.opencode/
+.agent/

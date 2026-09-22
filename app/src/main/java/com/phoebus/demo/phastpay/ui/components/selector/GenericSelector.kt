@@ -18,7 +18,8 @@ fun GenericSelector(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    testTag: String = "generic_selector"
+    testTag: String = "generic_selector",
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -32,6 +33,7 @@ fun GenericSelector(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             modifier = Modifier
                 .testTag(testTag)
                 .semantics { contentDescription = testTag },

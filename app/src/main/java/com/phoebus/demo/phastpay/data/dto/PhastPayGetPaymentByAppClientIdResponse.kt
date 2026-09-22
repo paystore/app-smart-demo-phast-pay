@@ -28,6 +28,10 @@ class PhastPayGetPaymentByAppClientIdResponse (
     val applicationId: String? = null,
     @SerialName("application_name")
     val applicationName: String? = null,
+    @SerialName("original_amount_value")
+    val originalAmountValue: String? = null,
+    @SerialName("provider_data")
+    val providerData: PhastPayProviderData? = null,
     @SerialName("refunds")
     val refunds: List<PhastPayGetRefundByIdResponse>? = null
 )

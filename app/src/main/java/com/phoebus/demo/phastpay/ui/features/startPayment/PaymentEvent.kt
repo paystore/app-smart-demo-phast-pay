@@ -7,6 +7,7 @@ sealed interface PaymentEvent {
     data class UpdateSendValue(val sendValue: Boolean) : PaymentEvent
     data class UpdateValue(val value: String?) : PaymentEvent
     data class UpdateCurrency(val currency: String) : PaymentEvent
+    data class UpdateSendCurrency(val sendCurrency: Boolean) : PaymentEvent
     data class UpdatePrintCustomerReceipt(val print: Boolean) : PaymentEvent
     data class UpdatePrintMerchantReceipt(val print: Boolean) : PaymentEvent
     data class UpdatePreviewCustomerReceipt(val preview: Boolean) : PaymentEvent
@@ -19,7 +20,10 @@ sealed interface PaymentEvent {
     data class SendAdditionalInfo(val send: Boolean) : PaymentEvent
     data class UpdateCustomerName(val name: String?) : PaymentEvent
     data class UpdateCustomerEmail(val email: String?) : PaymentEvent
+    data class UpdateSendProviderId(val sendProviderId: Boolean) : PaymentEvent
+    data class UpdateProviderId(val providerId: String?) : PaymentEvent
     data object SubmitPayment : PaymentEvent
+    data object SubmitPaymentWithAbort : PaymentEvent
     data class UpdateErrorMessage(val message: String? = "") : PaymentEvent
     data class UpdateSuccessMessage(val message: String? = "") : PaymentEvent
 }

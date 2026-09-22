@@ -1,5 +1,6 @@
 package com.phoebus.demo.phastpay.ui.features.startPaymentApi
 
+import com.phoebus.demo.phastpay.data.dto.PhastPayGetQrCodeResponse
 import com.phoebus.demo.phastpay.data.enums.Service
 import java.util.UUID
 
@@ -23,7 +24,8 @@ data class PaymentApiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val paymentResult: String? = null,
-    val shouldPrintOnDismiss: Boolean = false
+    val shouldPrintOnDismiss: Boolean = false,
+    val qrCodeResult: PhastPayGetQrCodeResponse? = null
 ){
     fun isPrintEnabled(): Boolean = printMerchantReceipt || printCustomerReceipt || previewCustomerReceipt || previewMerchantReceipt
 }

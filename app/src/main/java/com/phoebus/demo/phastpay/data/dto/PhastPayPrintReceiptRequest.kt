@@ -23,4 +23,6 @@ data class PhastPayPrintReceiptRequest(
     val previewCustomerReceipt: Boolean = true,
     @SerialName("preview_merchant_receipt")
     val previewMerchantReceipt: Boolean = true,
+    @SerialName("last_transaction")
+    val lastTransaction: Boolean = false,
 )

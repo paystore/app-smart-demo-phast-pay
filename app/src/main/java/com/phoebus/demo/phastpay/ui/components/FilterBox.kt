@@ -1,11 +1,12 @@
 package com.phoebus.demo.phastpay.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,16 +61,17 @@ fun FilterBox(
                 .shadow(elevation = 1.dp, shape = RoundedCornerShape(50.dp))
                 .clip(RoundedCornerShape(50.dp))
                 .background(MaterialTheme.colorScheme.surface)
+                .horizontalScroll(rememberScrollState())
                 .testTag("filter_box_row")
                 .semantics { contentDescription = "Filter Box Row" },
-            horizontalArrangement = Arrangement.spacedBy((-5).dp),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             filterItems.forEach { filterItem ->
                 SelectionBoxItem(
                     item = filterItem,
                     selectedItem = selectedItem == filterItem,
-                    onSelectedItem
+                    onSelectedItem = onSelectedItem
                 )
             }
         }
@@ -80,7 +82,8 @@ fun FilterBox(
 fun SelectionBoxItem(
     item: FilterItem,
     selectedItem: Boolean,
-    onSelectedItem: (FilterItem) -> Unit
+    onSelectedItem: (FilterItem) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     SelectionBox(
         content = {
@@ -95,8 +98,7 @@ fun SelectionBoxItem(
             ) {
                 Text(
                     modifier = Modifier
-                        .padding(horizontal = 2.dp, vertical = 5.dp)
-                        .width(LocalConfiguration.current.screenWidthDp.dp * 0.2f)
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                         .testTag("selection_text_${item.label}")
                         .semantics { contentDescription = "Selection Text: ${item.label}" },
                     text = item.label,
@@ -112,7 +114,7 @@ fun SelectionBoxItem(
         },
         onClickAction = { onSelectedItem(item) },
         selected = selectedItem,
-        modifier = Modifier
+        modifier = modifier
             .zIndex(if (selectedItem) 1f else 0f)
             .testTag("selection_box_${item.label}")
             .semantics { contentDescription = "Selection Box: ${item.label}" }

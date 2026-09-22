@@ -12,8 +12,9 @@ data class PrintReceiptState (
     val appClientId: String = LastTransactionState.getAppClientId() ?: "",
     val applicationId: String = "",
     val applicationName: String = "",
+    val lastTransaction: Boolean = false,
 ){
     fun isButtonEnabled(): Boolean{
-        return appClientId.isNotBlank() || paymentId.isNotBlank() || refundId.isNotEmpty()
+        return lastTransaction || appClientId.isNotBlank() || paymentId.isNotBlank() || refundId.isNotEmpty()
     }
 }

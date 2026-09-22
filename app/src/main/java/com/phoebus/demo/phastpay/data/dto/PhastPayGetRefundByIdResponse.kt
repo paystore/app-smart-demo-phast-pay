@@ -17,4 +17,6 @@ class PhastPayGetRefundByIdResponse(
     val iva: String? = null,
     @SerialName("date_time")
     val dateTime: String? = null,
+    @SerialName("provider_data")
+    val providerData: PhastPayRefundProviderData? = null,
 )

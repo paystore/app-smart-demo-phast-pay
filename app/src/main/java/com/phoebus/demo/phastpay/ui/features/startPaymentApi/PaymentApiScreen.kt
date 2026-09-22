@@ -104,7 +104,8 @@ private fun PaymentApiScreenContent(
             onConfirm = onDismissDialog,
             onDismissRequest = onDismissDialog,
             title = stringResource(R.string.result),
-            message = dialogMessage
+            message = dialogMessage,
+            qrCodeBase64 = state.qrCodeResult?.base64
         )
     }
 
@@ -173,7 +174,7 @@ fun PaymentContent(
                 ServiceSelector(
                     service = Service.valueOf(state.service),
                     onPhastTypeSelected = { onEvent(PaymentApiEvent.UpdateService(it.name)) },
-                    allowedServices = listOf(Service.TWINT)
+                    allowedServices = listOf(Service.TWINT, Service.CRYPTO, Service.PIX)
                 )
             }
 

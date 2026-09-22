@@ -17,13 +17,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.phoebus.demo.phastpay.R
+import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentByAppClientIdResponse
+import com.phoebus.demo.phastpay.data.dto.PhastPayGetPaymentsResponse
+import com.phoebus.demo.phastpay.data.dto.PhastPayGetRefundByIdResponse
+import com.phoebus.demo.phastpay.data.dto.PhastPayProviderData
+import com.phoebus.demo.phastpay.data.dto.PhastPayRefundProviderData
+import com.phoebus.demo.phastpay.data.enums.ServiceType
+import com.phoebus.demo.phastpay.data.enums.TransactionStatus
 import com.phoebus.demo.phastpay.ui.components.receipt.PhastItem
 import com.phoebus.demo.phastpay.ui.components.receipt.RefundsItem
 import com.phoebus.demo.phastpay.ui.components.topbar.TopBar
 import com.phoebus.demo.phastpay.ui.navigation.RouteParams
+import com.phoebus.demo.phastpay.ui.theme.AppSmartDemoPhastPayTheme
 
 @Composable
 fun GetPaymentsScreen(
@@ -95,8 +104,8 @@ fun GetPaymentsContent(
             ) {
                 if (it != null) {
                     items(it.payments) { item ->
-                        val refunds = item.refunds?.map{
-                            RefundsItem(refundId = it.refundId, valor = it.value, status = it.status, dateTime = it.dateTime, iva = it.iva)
+                        val refunds = item.refunds?.map{ ref ->
+                            RefundsItem(refundId = ref.refundId, valor = ref.value, status = ref.status, dateTime = ref.dateTime, iva = ref.iva, providerData = ref.providerData)
                         }
                         PhastItem(
                             currency = item.currency,
@@ -108,7 +117,8 @@ fun GetPaymentsContent(
                             additionalValue = item.additionalValue,
                             dateTime = item.dateTime,
                             iva = item.iva,
-                            refunds = refunds
+                            refunds = refunds,
+                            providerData = item.providerData
                         )
                     }
                 }
@@ -122,8 +132,87 @@ fun GetPaymentsContent(
         }
 
     }
-
-
 }
 
+@Preview(showBackground = true)
+@Composable
+fun GetPaymentsContentPreview() {
+    AppSmartDemoPhastPayTheme {
+        GetPaymentsContent(
+            formState = GetPaymentsState(
+                getListResult = PhastPayGetPaymentsResponse(
+                    payments = listOf(
+                        PhastPayGetPaymentByAppClientIdResponse(
+                            paymentId = "PAY-0001",
+                            appClientId = "CLIENT-0001",
+                            status = TransactionStatus.CONFIRMED_PAYMENT.name,
+                            value = "25.00",
+                            dateTime = "2026-08-12T10:30:00Z",
+                            service = ServiceType.BIZUM.name,
+                            currency = "EUR"
+                        ),
+                        PhastPayGetPaymentByAppClientIdResponse(
+                            paymentId = "PAY-0002",
+                            appClientId = "CLIENT-0002",
+                            status = TransactionStatus.CONFIRMED_PAYMENT.name,
+                            value = "150.00",
+                            dateTime = "2026-08-12T09:00:00Z",
+                            service = ServiceType.CRYPTO.name,
+                            currency = "EUR",
+                            providerData = PhastPayProviderData(
+                                leftToPayAmountValue = "0.00",
+                                cryptoAmount = "0.0021",
+                                cryptoCurrencyCode = "BTC",
+                                network = "Bitcoin",
+                                processingFeeFiatAmount = "1.50",
+                                transactionHash = "0xabc123def456"
+                            )
+                        ),
+                        PhastPayGetPaymentByAppClientIdResponse(
+                            paymentId = "PAY-0003",
+                            appClientId = "CLIENT-0003",
+                            status = TransactionStatus.WAITING_PAYMENT.name,
+                            value = "10.50",
+                            dateTime = "2026-08-11T18:15:00Z",
+                            service = ServiceType.PIX.name,
+                            currency = "USD",
+                            providerData = PhastPayProviderData(
+                                rate = "5.42",
+                                amountBrl = "56.91"
+                            ),
+                            refunds = listOf(
+                                PhastPayGetRefundByIdResponse(
+                                    refundId = "REF-0001",
+                                    appClientId = "CLIENT-0003",
+                                    status = TransactionStatus.COMPLETED_REFUND.name,
+                                    value = "5.25",
+                                    dateTime = "2026-08-12T08:00:00Z",
+                                    providerData = PhastPayRefundProviderData(
+                                        rateRefunded = "5.42",
+                                        amountRefundedBrl = "28.46"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            formEvent = {},
+            modifier = Modifier
+        )
+    }
+}
 
+@Preview(showBackground = true)
+@Composable
+fun GetPaymentsContentEmptyPreview() {
+    AppSmartDemoPhastPayTheme {
+        GetPaymentsContent(
+            formState = GetPaymentsState(
+                getListResult = PhastPayGetPaymentsResponse(payments = emptyList())
+            ),
+            formEvent = {},
+            modifier = Modifier
+        )
+    }
+}

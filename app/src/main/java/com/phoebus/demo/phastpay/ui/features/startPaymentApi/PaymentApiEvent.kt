@@ -1,5 +1,7 @@
 package com.phoebus.demo.phastpay.ui.features.startPaymentApi
 
+import com.phoebus.demo.phastpay.data.dto.PhastPayStartPaymentApiResponse
+
 sealed interface PaymentApiEvent {
     data object Initialize : PaymentApiEvent
     data class UpdateAppClientId(val appClientId: String) : PaymentApiEvent
@@ -17,7 +19,7 @@ sealed interface PaymentApiEvent {
     data class UpdateProviderId(val providerId: String?) : PaymentApiEvent
     data object SubmitPaymentApi : PaymentApiEvent
     data class UpdateErrorMessage(val message: String? = "") : PaymentApiEvent
-    data class UpdateSuccessMessage(val message: String? = "") : PaymentApiEvent
+    data class UpdateSuccessMessage(val response: PhastPayStartPaymentApiResponse?) : PaymentApiEvent
 }
 
 sealed interface PaymentApiNavigationEvents {

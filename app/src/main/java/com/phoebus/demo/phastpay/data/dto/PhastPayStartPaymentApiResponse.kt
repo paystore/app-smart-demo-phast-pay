@@ -8,6 +8,8 @@ class PhastPayStartPaymentApiResponse(
     val correlationId: String,
     val transactionId: String,
     val status: TransactionStatus,
-    val dateTimeOrder: String
+    val dateTimeOrder: String,
+    val qrcode: PhastPayGetQrCodeResponse?,
+    val providerData: PhastPayProviderData?
 )
 
